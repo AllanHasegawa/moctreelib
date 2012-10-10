@@ -39,7 +39,16 @@ int main() {
   moctree::MOctree<int> *t0;
   t0 = new moctree::ClassicOctree<int>(4);
 
-  t0->InsertCell(0, 0, 0, types + 0);
+  // One block of size 3
+  for (int x = 0; x < 2; x++) {
+    for (int y = 0; y < 2; y++) {
+      for (int z = 0; z < 2; z++) {
+        t0->InsertCell(x, y, z, types+0);
+      }
+   }
+  }
+
+  // A Single cell
   t0->InsertCell(2, 3, 1, types + 1);
 
   cout << t0->ToString() << endl;

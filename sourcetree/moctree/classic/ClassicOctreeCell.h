@@ -58,7 +58,15 @@ class ClassicOctreeCell {
                   T* data) {
     if (size_ == 1) {
       data_ = data;
+
+      this->PopulateFatherCells(this);
+
     } else {
+      if (data_ == data) {
+        return;
+      }
+      // Make sure it represents an mixed cell;
+      data_ = NULL;
       this->CreateChildren();
       this->children_[ConvertXYZToChildNumber(x, y, z)]->InsertCell(x, y, z,
                                                                     data);
@@ -193,6 +201,18 @@ class ClassicOctreeCell {
       // then delete its array :3
       delete[] children_;
       children_ = NULL;
+    }
+  }
+
+  void PopulateFatherCells(ClassicOctreeCell<T>* cell) {
+    if (cell->father_ != NULL) {
+      for (int i = 0; i < 8; i++) {
+        if (cell->father_->children_[i]->data_ != cell->data_) {
+          return;
+        }
+      }
+      cell->father_->data_ = cell->data_;
+      PopulateFatherCells(cell->father_);
     }
   }
 
