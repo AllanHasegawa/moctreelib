@@ -24,25 +24,34 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MOCTREE_MOCTREE_H_
-#define MOCTREE_MOCTREE_H_
+#include <iostream>
+#include <moctree/MOctree.h>
+#include <moctree/classic/ClassicOctree.h>
+#include <moctree/classic/ClassicOctreeCell.h>
 
-#include <stdint.h>
+int main() {
+  using namespace std;
 
-namespace moctree {
+  int types[2];
+  types[0] = 1;
+  types[1] = 2;
 
-template<class T>
-class MOctree {
- public:
-  virtual ~MOctree() {
-  }
+  moctree::MOctree<int> *t0;
+  t0 = new moctree::ClassicOctree<int>(4);
 
-  virtual void InsertCell(const uint32_t x, const uint32_t y, const uint32_t z,
-                          T* data) = 0;
-  virtual void DeleteCell(const uint32_t x, const uint32_t y,
-                          const uint32_t z) = 0;
-  virtual T* GetData(const uint32_t x, const uint32_t y, const uint32_t z) = 0;
-};
+  t0->InsertCell(0, 0, 0, types + 0);
+  t0->InsertCell(0, 2, 0, types + 1);
 
-}  // namespace moctree
-#endif /* MOCTREE_MOCTREE_H_ */
+  cout << "Hello" << endl;
+
+  cout << "T0: " << types + 0 << endl << "T1: " << types + 1 << endl;
+
+  cout << t0->GetData(0, 0, 0) << endl;
+  cout << t0->GetData(0, 2, 0) << endl;
+
+  cout << "World!" << endl;
+
+  delete t0;
+
+  return 0;
+}

@@ -24,25 +24,42 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MOCTREE_MOCTREE_H_
-#define MOCTREE_MOCTREE_H_
+#ifndef MOCTREE_CLASSICOCTREE_H_
+#define MOCTREE_CLASSICOCTREE_H_
 
-#include <stdint.h>
+#include <iostream>
+#include <moctree/MOctree.h>
+#include <moctree/classic/ClassicOctreeCell.h>
 
 namespace moctree {
 
 template<class T>
-class MOctree {
+class ClassicOctree : public MOctree<T> {
  public:
-  virtual ~MOctree() {
+  ClassicOctree(const uint32_t size) {
+    root_ = new ClassicOctreeCell<T>(0, 0, 0, size);
+  }
+  ~ClassicOctree() {
+
   }
 
-  virtual void InsertCell(const uint32_t x, const uint32_t y, const uint32_t z,
-                          T* data) = 0;
-  virtual void DeleteCell(const uint32_t x, const uint32_t y,
-                          const uint32_t z) = 0;
-  virtual T* GetData(const uint32_t x, const uint32_t y, const uint32_t z) = 0;
+  void InsertCell(const uint32_t x, const uint32_t y, const uint32_t z,
+                  T* data) {
+    root_->InsertCell(x, y, z, data);
+  }
+
+  void DeleteCell(const uint32_t x, const uint32_t y, const uint32_t z) {
+
+  }
+
+  T* GetData(const uint32_t x, const uint32_t y, const uint32_t z) {
+    return root_->GetData(x, y, z);
+  }
+
+ private:
+  ClassicOctreeCell<T>* root_;
 };
 
 }  // namespace moctree
-#endif /* MOCTREE_MOCTREE_H_ */
+
+#endif /* MOCTREE_CLASSICOCTREE_H_ */
