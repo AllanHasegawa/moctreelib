@@ -56,6 +56,10 @@ class ClassicOctree : public MOctree<T> {
     return root_->GetData(x, y, z);
   }
 
+  std::string ToString() {
+    return root_->ToStringRecursive(0,0);
+  }
+
  private:
   ClassicOctreeCell<T>* root_;
 };

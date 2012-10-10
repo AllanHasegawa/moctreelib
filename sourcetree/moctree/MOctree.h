@@ -42,6 +42,7 @@ class MOctree {
   virtual void DeleteCell(const uint32_t x, const uint32_t y,
                           const uint32_t z) = 0;
   virtual T* GetData(const uint32_t x, const uint32_t y, const uint32_t z) = 0;
+  virtual std::string ToString() = 0;
 };
 
 }  // namespace moctree

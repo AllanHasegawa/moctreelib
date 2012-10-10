@@ -40,14 +40,16 @@ int main() {
   t0 = new moctree::ClassicOctree<int>(4);
 
   t0->InsertCell(0, 0, 0, types + 0);
-  t0->InsertCell(0, 2, 0, types + 1);
+  t0->InsertCell(2, 3, 1, types + 1);
+
+  cout << t0->ToString() << endl;
 
   cout << "Hello" << endl;
 
   cout << "T0: " << types + 0 << endl << "T1: " << types + 1 << endl;
 
   cout << t0->GetData(0, 0, 0) << endl;
-  cout << t0->GetData(0, 2, 0) << endl;
+  cout << t0->GetData(2, 3, 1) << endl;
 
   cout << "World!" << endl;
 

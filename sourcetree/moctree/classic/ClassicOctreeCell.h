@@ -29,6 +29,8 @@
 
 #include <stdint.h>
 #include <iostream>
+#include <string>
+#include <sstream>
 
 namespace moctree {
 
@@ -43,7 +45,6 @@ class ClassicOctreeCell {
         data_(NULL),
         children_(NULL),
         father_(NULL) {
-
   }
   virtual ~ClassicOctreeCell() {
     KillChildren();
@@ -53,53 +54,12 @@ class ClassicOctreeCell {
     return children_[N];
   }
 
-  void CreateChildren(ClassicOctreeCell<T>* father) {
-    if (children_ == NULL && size_ != 1) {
-      const uint32_t size_father = father->size();
-      const uint32_t x_father = father->x();
-      const uint32_t y_father = father->y();
-      const uint32_t z_father = father->z();
-
-      const uint32_t size = size_father / 2;
-      const uint32_t mid_size = size / 2;
-
-      // Lets create the children array
-      children_ = new ClassicOctreeCell<T>*[8];
-
-      // then insert it :3
-      int counter = 0;
-      for (int z = 0; z < 2; z++) {
-        for (int y = 0; y < 2; y++) {
-          for (int x = 0; x < 2; x++) {
-            children_[counter] = new ClassicOctreeCell<T>(
-                x_father + (x * mid_size), y_father + (y * mid_size),
-                z_father + (z * mid_size), size);
-            children_[counter]->set_father(father);
-            counter++;
-          }
-        }
-      }
-    }
-  }
-
-  void KillChildren() {
-    if (children_ != NULL) {
-      // First delete the actual children...
-      for (int i = 0; i < 8; i++) {
-        delete children_[i];
-      }
-      // then delete its array :3
-      delete[] children_;
-      children_ = NULL;
-    }
-  }
-
   void InsertCell(const uint32_t x, const uint32_t y, const uint32_t z,
                   T* data) {
     if (size_ == 1) {
       data_ = data;
     } else {
-      this->CreateChildren(this);
+      this->CreateChildren();
       this->children_[ConvertXYZToChildNumber(x, y, z)]->InsertCell(x, y, z,
                                                                     data);
     }
@@ -122,6 +82,41 @@ class ClassicOctreeCell {
     }
 
     return this->children_[ConvertXYZToChildNumber(x, y, z)]->GetData(x, y, z);
+  }
+
+  std::string ToStringRecursive(const int level, const int child_number) {
+    std::stringstream child_number_str;
+    child_number_str << child_number;
+
+    std::string t = "";
+    for (int i = 0; i < level; i++) {
+      t += " ";
+    }
+    t += "+- ";
+
+    if (data_ == NULL) {
+      t += "<empty> (" + child_number_str.str() + ")\n";
+    } else {
+      std::stringstream ss;
+      ss << data_;
+      t += ss.str() + " (" + child_number_str.str() + ")\n";
+    }
+
+    if (size_ == 1 || children_ == NULL) {
+      return t;
+    }
+
+    std::string my_string = "";
+    if (level == 0) {
+      my_string = "+- root\n";
+    } else {
+      my_string += t;
+    }
+    for (int i = 0; i < 8; i++) {
+      my_string += children_[i]->ToStringRecursive(level + 1, i);
+    }
+
+    return my_string;
   }
 
   void set_data(T* data) {
@@ -161,14 +156,54 @@ class ClassicOctreeCell {
   ClassicOctreeCell<T>** children_;
   ClassicOctreeCell<T>* father_;
 
+  void CreateChildren() {
+    if (children_ == NULL && size_ != 1) {
+      const uint32_t size_father = size_;
+      const uint32_t x_father = x_;
+      const uint32_t y_father = y_;
+      const uint32_t z_father = z_;
+
+      const uint32_t size_children = size_father / 2;
+
+      // Lets create the children array
+      children_ = new ClassicOctreeCell<T>*[8];
+
+      // then insert it :3
+      int counter = 0;
+      for (int z = 0; z < 2; z++) {
+        for (int y = 0; y < 2; y++) {
+          for (int x = 0; x < 2; x++) {
+            children_[counter] = new ClassicOctreeCell<T>(
+                x_father + (x * size_children), y_father + (y * size_children),
+                z_father + (z * size_children), size_children);
+            children_[counter]->set_father(this);
+            counter++;
+          }
+        }
+      }
+    }
+  }
+
+  void KillChildren() {
+    if (children_ != NULL) {
+      // First delete the actual children...
+      for (int i = 0; i < 8; i++) {
+        delete children_[i];
+      }
+      // then delete its array :3
+      delete[] children_;
+      children_ = NULL;
+    }
+  }
+
   inline int ConvertXYZToChildNumber(const uint32_t x, const uint32_t y,
                                      const uint32_t z) {
     const uint32_t size = size_;
     const uint32_t mid_size = size_ / 2;
 
-    const int bx = x >= mid_size;
-    const int by = y >= mid_size;
-    const int bz = z >= mid_size;
+    const int bx = x >= (mid_size + x_);
+    const int by = y >= (mid_size + y_);
+    const int bz = z >= (mid_size + z_);
 
     int child = 0;
     child += bx;
@@ -177,6 +212,7 @@ class ClassicOctreeCell {
 
     return child;
   }
+
 };
 
 }  // namespace moctree
