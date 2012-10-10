@@ -26,6 +26,8 @@ include_directories(${INCLUDE_DIRECTORIES} ${CMAKE_SOURCE_DIR})
 
 add_subdirectory(moctree)
 
+add_sources(temp_main.cpp)
 message(STATUS ${SRCS})
 
 #add_library(moctreelib SHARED ${SRCS})
+add_executable(moctreelib ${SRCS})
