@@ -39,17 +39,22 @@ int main() {
   moctree::MOctree<int> *t0;
   t0 = new moctree::ClassicOctree<int>(4);
 
-  // One block of size 3
+  // One block of size 2x2x2
   for (int x = 0; x < 2; x++) {
     for (int y = 0; y < 2; y++) {
       for (int z = 0; z < 2; z++) {
-        t0->InsertCell(x, y, z, types+0);
+        t0->InsertCell(x, y, z, types + 0);
       }
-   }
+    }
   }
 
   // A Single cell
   t0->InsertCell(2, 3, 1, types + 1);
+
+  // Lets insert a cell, then destroy, t0 will get back to
+  // previous state :)
+  t0->InsertCell(2, 3, 2, types + 1);
+  t0->DeleteCell(2, 3, 2);
 
   cout << t0->ToString() << endl;
 

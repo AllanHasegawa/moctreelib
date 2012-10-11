@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 
 project(moctreelib-helloworld)
 
-include_directories(${INCLUDE_DIRECTORIES} "../../sourcetree")
-include_directories(${INCLUDE_DIRECTORIES} ${CMAKE_SOURCE_DIR})
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../../cmake/modules/")
+
+find_package(MOctree REQUIRED)
+
+include_directories(${MOCTREE_INCLUDE_DIRS})
 
 set(SRCS
 	helloworld.cpp

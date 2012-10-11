@@ -1,1 +1,1 @@
-#add_sources(ClassicOctreeCell.cpp)
+add_headers(ClassicOctreeCell.h ClassicOctree.h)

@@ -73,6 +73,19 @@ class ClassicOctreeCell {
     }
   }
 
+  void DeleteCell(const uint32_t x, const uint32_t y, const uint32_t z) {
+    if (size_ == 1) {
+      data_ = NULL;
+      this->PopulateFatherCells(this);
+    } else {
+      data_ = NULL;
+      if (children_ != NULL) {
+        this->children_[ConvertXYZToChildNumber(x, y, z)]->DeleteCell(x, y, z);
+      }
+      this->PopulateFatherCells(this);
+    }
+  }
+
   T* GetData(const uint32_t x, const uint32_t y, const uint32_t z) {
 
     // if there is data BEFORE hitting the bottom of the tree
@@ -210,6 +223,9 @@ class ClassicOctreeCell {
         if (cell->father_->children_[i]->data_ != cell->data_) {
           return;
         }
+      }
+      if (cell->data_ == NULL) {
+        cell->father_->KillChildren();
       }
       cell->father_->data_ = cell->data_;
       PopulateFatherCells(cell->father_);

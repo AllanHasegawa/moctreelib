@@ -36,7 +36,8 @@ namespace moctree {
 template<class T>
 class ClassicOctree : public MOctree<T> {
  public:
-  ClassicOctree(const uint32_t size) {
+  ClassicOctree(const uint32_t size)
+      : size_(size) {
     root_ = new ClassicOctreeCell<T>(0, 0, 0, size);
   }
   ~ClassicOctree() {
@@ -45,23 +46,34 @@ class ClassicOctree : public MOctree<T> {
 
   void InsertCell(const uint32_t x, const uint32_t y, const uint32_t z,
                   T* data) {
+    if (x > size_ || y > size_ || z > size_) {
+      return;
+    }
+
     root_->InsertCell(x, y, z, data);
   }
 
   void DeleteCell(const uint32_t x, const uint32_t y, const uint32_t z) {
-
+    if (x > size_ || y > size_ || z > size_) {
+      return;
+    }
+    root_->DeleteCell(x, y, z);
   }
 
   T* GetData(const uint32_t x, const uint32_t y, const uint32_t z) {
+    if (x > size_ || y > size_ || z > size_) {
+      return NULL;
+    }
     return root_->GetData(x, y, z);
   }
 
   std::string ToString() {
-    return root_->ToStringRecursive(0,0);
+    return root_->ToStringRecursive(0, 0);
   }
 
  private:
   ClassicOctreeCell<T>* root_;
+  const uint32_t size_;
 };
 
 }  // namespace moctree
