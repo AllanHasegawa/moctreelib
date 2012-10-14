@@ -34,12 +34,26 @@ class CanvasWindow : public wxGLCanvas {
  public:
   CanvasWindow(wxFrame* parent);
   virtual ~CanvasWindow();
-  void Paintit(wxPaintEvent& event);
+  void OnPaintit(wxPaintEvent& event);
+
+  void OnResized(wxSizeEvent& evt);
+  void OnMouseMoved(wxMouseEvent& event);
+  void OnMouseWheelMoved(wxMouseEvent& event);
+  void OnMouseLeftDown(wxMouseEvent& event);
+  void OnMouseLeftUp(wxMouseEvent& event);
+  void OnMouseRightDown(wxMouseEvent& event);
+  void OnMouseRightUp(wxMouseEvent& event);
+  void OnMouseLeftWindow(wxMouseEvent& event);
+  void OnKeyPressed(wxKeyEvent& event);
+  void OnKeyReleased(wxKeyEvent& event);
+  void OnIdle(wxIdleEvent &event);
 
  private:
   bool pending_setup_;
+  float rot_;
 
   void Render();
+  void SetupOpenGLProjection();
 
  protected:
 DECLARE_EVENT_TABLE()

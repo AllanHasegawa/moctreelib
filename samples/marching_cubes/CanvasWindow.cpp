@@ -28,38 +28,36 @@
 #include <wx/wx.h>
 #include <wx/glcanvas.h>
 
+
+
 CanvasWindow::CanvasWindow(wxFrame *parent)
     : pending_setup_(true),
       wxGLCanvas(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
                  wxT("GLCanvas")) {
   int argc = 1;
   char* argv[1] = { wxString((wxTheApp->argv)[0]).char_str()};
+
 }
 
 CanvasWindow::~CanvasWindow() {
   // TODO Auto-generated destructor stub
 }
 
-void CanvasWindow::Paintit(wxPaintEvent& WXUNUSED(event)) {
+void CanvasWindow::OnPaintit(wxPaintEvent& WXUNUSED(event)) {
+
+  SetCurrent();
+  wxPaintDC(this);
   if (pending_setup_) {
-    SetCurrent();
-    wxPaintDC(this);
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-    glViewport(0, 0, (GLint) GetSize().x, (GLint) GetSize().y);
 
     glClearDepth(1.0);
     glDepthFunc(GL_LESS);
     glEnable(GL_DEPTH_TEST);
     glShadeModel(GL_SMOOTH);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+    SetupOpenGLProjection();
 
-    gluPerspective(45.0f, (GLfloat) GetSize().x / (GLfloat) GetSize().y, 0.1f, 100.0f);
-
-    glMatrixMode(GL_MODELVIEW);
-
-
+    rot_ = 0;
     pending_setup_ = false;
   } else {
     Render();
@@ -72,9 +70,9 @@ void CanvasWindow::Render() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glLoadIdentity();
-  glTranslatef(1.5f, 0.0f, -10.0f);             // Move Right And Into The Screen
+  glTranslatef(1.5f, 0.0f, -10.0f);            // Move Right And Into The Screen
 
-  //glRotatef(1, 1.0f, 1.0f, 1.0f);            // Rotate The Cube On X, Y & Z
+  glRotatef(rot_, 1.0f, 1.0f, 1.0f);            // Rotate The Cube On X, Y & Z
 
   glBegin(GL_QUADS);                  // Start Drawing The Cube
 
@@ -111,7 +109,74 @@ void CanvasWindow::Render() {
 
   glFlush();
 }
+
+void CanvasWindow::SetupOpenGLProjection() {
+
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+
+
+  glViewport(0, 0, (GLint) GetSize().x, (GLint) GetSize().y);
+
+  gluPerspective(45.0f, (GLfloat) GetSize().x / (GLfloat) GetSize().y, 0.1f,
+                 100.0f);
+
+  glMatrixMode(GL_MODELVIEW);
+}
+
+void CanvasWindow::OnResized(wxSizeEvent& evt) {
+
+  SetupOpenGLProjection();
+
+  Refresh();
+
+}
+
+void CanvasWindow::OnIdle(wxIdleEvent &event) {
+  Refresh(false);
+}
+
+void CanvasWindow::OnMouseMoved(wxMouseEvent& event) {
+  rot_ += 0.1f;
+}
+void CanvasWindow::OnMouseWheelMoved(wxMouseEvent& event) {
+
+}
+void CanvasWindow::OnMouseLeftDown(wxMouseEvent& event) {
+
+}
+void CanvasWindow::OnMouseLeftUp(wxMouseEvent& event) {
+
+}
+void CanvasWindow::OnMouseRightDown(wxMouseEvent& event) {
+
+}
+void CanvasWindow::OnMouseRightUp(wxMouseEvent& event) {
+
+}
+void CanvasWindow::OnMouseLeftWindow(wxMouseEvent& event) {
+
+}
+void CanvasWindow::OnKeyPressed(wxKeyEvent& event) {
+
+}
+void CanvasWindow::OnKeyReleased(wxKeyEvent& event) {
+
+}
 /*
- * wxWidget thing =X
- */BEGIN_EVENT_TABLE(CanvasWindow, wxGLCanvas) EVT_PAINT (CanvasWindow::Paintit)
-END_EVENT_TABLE()
+ * wxWidget events link =X
+ */BEGIN_EVENT_TABLE(CanvasWindow, wxGLCanvas)   //
+EVT_MOUSEWHEEL(CanvasWindow::OnMouseWheelMoved)  //
+EVT_MOTION(CanvasWindow::OnMouseMoved)//
+EVT_LEFT_DOWN(CanvasWindow::OnMouseLeftDown)//
+EVT_LEFT_UP(CanvasWindow::OnMouseLeftUp)//
+EVT_RIGHT_DOWN(CanvasWindow::OnMouseRightDown)//
+EVT_RIGHT_UP(CanvasWindow::OnMouseRightUp)//
+EVT_LEAVE_WINDOW(CanvasWindow::OnMouseLeftWindow)//
+EVT_KEY_DOWN(CanvasWindow::OnKeyPressed)//
+EVT_KEY_UP(CanvasWindow::OnKeyReleased)//
+EVT_PAINT (CanvasWindow::OnPaintit)//
+EVT_SIZE(CanvasWindow::OnResized)//
+EVT_IDLE(CanvasWindow::OnIdle)//
+END_EVENT_TABLE()//
