@@ -9,7 +9,9 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 set(SRCS
 	marching_cubes.cpp
-	CanvasWindow.cpp)
+	CanvasWindow.cpp
+	CameraPosition.cpp)
+	
 set(DEPS
 	${wxWidgets_LIBRARIES})
 

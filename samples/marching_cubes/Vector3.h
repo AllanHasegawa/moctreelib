@@ -24,45 +24,24 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MOCTREE_CANVASWINDOW_H_
-#define MOCTREE_CANVASWINDOW_H_
+#ifndef MOCTREE_VECTOR3_H_
+#define MOCTREE_VECTOR3_H_
 
-#include <wx/wx.h>
-#include <wx/glcanvas.h>
-
-#include <CameraPosition.h>
-
-class CanvasWindow : public wxGLCanvas {
+class Vector3 {
  public:
-  CanvasWindow(wxFrame* parent);
-  virtual ~CanvasWindow();
-  void OnPaintit(wxPaintEvent& event);
+  Vector3()
+      : x_(0),
+        y_(0),
+        z_(0) {
 
-  void OnResized(wxSizeEvent& evt);
-  void OnMouseMoved(wxMouseEvent& event);
-  void OnMouseWheelMoved(wxMouseEvent& event);
-  void OnMouseLeftDown(wxMouseEvent& event);
-  void OnMouseLeftUp(wxMouseEvent& event);
-  void OnMouseRightDown(wxMouseEvent& event);
-  void OnMouseRightUp(wxMouseEvent& event);
-  void OnMouseLeftWindow(wxMouseEvent& event);
-  void OnKeyPressed(wxKeyEvent& event);
-  void OnKeyReleased(wxKeyEvent& event);
-  void OnIdle(wxIdleEvent &event);
+  }
+  virtual ~Vector3() {
 
- private:
-  bool pending_setup_;
-  float rot_;
-  wxGLContext* gl_context_;
-  CameraPosition camera_position_;
+  }
 
-  void Update(const double& delta_time);
-  void Render();
-  void SetupOpenGLProjection();
-
- protected:
-DECLARE_EVENT_TABLE()
-
+  double x_;
+  double y_;
+  double z_;
 };
 
-#endif /* MOCTREE_CANVASWINDOW_H_ */
+#endif /* MOCTREE_VECTOR3_H_ */

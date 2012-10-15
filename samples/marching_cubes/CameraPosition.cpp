@@ -24,45 +24,50 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MOCTREE_CANVASWINDOW_H_
-#define MOCTREE_CANVASWINDOW_H_
+#include "CameraPosition.h"
 
-#include <wx/wx.h>
-#include <wx/glcanvas.h>
+CameraPosition::CameraPosition() {
+  // TODO Auto-generated constructor stub
 
-#include <CameraPosition.h>
+}
 
-class CanvasWindow : public wxGLCanvas {
- public:
-  CanvasWindow(wxFrame* parent);
-  virtual ~CanvasWindow();
-  void OnPaintit(wxPaintEvent& event);
+CameraPosition::~CameraPosition() {
+  // TODO Auto-generated destructor stub
+}
 
-  void OnResized(wxSizeEvent& evt);
-  void OnMouseMoved(wxMouseEvent& event);
-  void OnMouseWheelMoved(wxMouseEvent& event);
-  void OnMouseLeftDown(wxMouseEvent& event);
-  void OnMouseLeftUp(wxMouseEvent& event);
-  void OnMouseRightDown(wxMouseEvent& event);
-  void OnMouseRightUp(wxMouseEvent& event);
-  void OnMouseLeftWindow(wxMouseEvent& event);
-  void OnKeyPressed(wxKeyEvent& event);
-  void OnKeyReleased(wxKeyEvent& event);
-  void OnIdle(wxIdleEvent &event);
+void CameraPosition::Update(const double& delta_time) {
+  position_.x_ += moving_.x_ * movement_speed_.x_ * delta_time;
+  position_.y_ += moving_.y_ * movement_speed_.y_ * delta_time;
+  position_.z_ += moving_.z_ * movement_speed_.z_ * delta_time;
+}
 
- private:
-  bool pending_setup_;
-  float rot_;
-  wxGLContext* gl_context_;
-  CameraPosition camera_position_;
+void CameraPosition::Reset() {
+  position_ = Vector3();
+  moving_ = Vector3();
+  angle_ = Vector3();
+}
 
-  void Update(const double& delta_time);
-  void Render();
-  void SetupOpenGLProjection();
+const Vector3 CameraPosition::angle() {
+  return angle_;
+}
+const Vector3 CameraPosition::position() {
+  return position_;
+}
 
- protected:
-DECLARE_EVENT_TABLE()
+void CameraPosition::SetXMovement(Movement movement) {
+  moving_.x_ = movement;
+}
 
-};
+void CameraPosition::SetYMovement(Movement movement) {
+  moving_.y_ = movement;
+}
 
-#endif /* MOCTREE_CANVASWINDOW_H_ */
+void CameraPosition::SetZMovement(Movement movement) {
+  moving_.z_ = movement;
+}
+
+void CameraPosition::SetMovementSpeed(const double x, const double y, const double z) {
+  movement_speed_.x_ = x;
+  movement_speed_.y_ = y;
+  movement_speed_.z_ = z;
+}

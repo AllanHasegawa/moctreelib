@@ -24,45 +24,38 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MOCTREE_CANVASWINDOW_H_
-#define MOCTREE_CANVASWINDOW_H_
+#ifndef MOCTREE_CAMERAPOSITION_H_
+#define MOCTREE_CAMERAPOSITION_H_
 
-#include <wx/wx.h>
-#include <wx/glcanvas.h>
+#include <Vector3.h>
 
-#include <CameraPosition.h>
-
-class CanvasWindow : public wxGLCanvas {
- public:
-  CanvasWindow(wxFrame* parent);
-  virtual ~CanvasWindow();
-  void OnPaintit(wxPaintEvent& event);
-
-  void OnResized(wxSizeEvent& evt);
-  void OnMouseMoved(wxMouseEvent& event);
-  void OnMouseWheelMoved(wxMouseEvent& event);
-  void OnMouseLeftDown(wxMouseEvent& event);
-  void OnMouseLeftUp(wxMouseEvent& event);
-  void OnMouseRightDown(wxMouseEvent& event);
-  void OnMouseRightUp(wxMouseEvent& event);
-  void OnMouseLeftWindow(wxMouseEvent& event);
-  void OnKeyPressed(wxKeyEvent& event);
-  void OnKeyReleased(wxKeyEvent& event);
-  void OnIdle(wxIdleEvent &event);
-
- private:
-  bool pending_setup_;
-  float rot_;
-  wxGLContext* gl_context_;
-  CameraPosition camera_position_;
-
-  void Update(const double& delta_time);
-  void Render();
-  void SetupOpenGLProjection();
-
- protected:
-DECLARE_EVENT_TABLE()
-
+enum Movement {
+  FORWARD = 1,
+  NONE = 0,
+  BACKWARD = -1
 };
 
-#endif /* MOCTREE_CANVASWINDOW_H_ */
+class CameraPosition {
+ public:
+  CameraPosition();
+  virtual ~CameraPosition();
+
+  void Update(const double& delta_time);
+  void Reset();
+
+  const Vector3 angle();
+  const Vector3 position();
+
+  void SetXMovement(Movement movement);
+  void SetYMovement(Movement movement);
+  void SetZMovement(Movement movement);
+  void SetMovementSpeed(const double x, const double y, const double z);
+
+ private:
+  Vector3 angle_;
+  Vector3 position_;
+  Vector3 moving_;
+  Vector3 movement_speed_;
+};
+
+#endif /* MOCTREE_CAMERAPOSITION_H_ */
