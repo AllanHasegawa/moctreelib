@@ -31,6 +31,7 @@
 #include <wx/glcanvas.h>
 
 #include <CameraPosition.h>
+#include <Vector3.h>
 
 class CanvasWindow : public wxGLCanvas {
  public:
@@ -55,6 +56,8 @@ class CanvasWindow : public wxGLCanvas {
   float rot_;
   wxGLContext* gl_context_;
   CameraPosition camera_position_;
+  Vector3 mouse_last_posistion_;
+  bool mouse_right_down_;
 
   void Update(const double& delta_time);
   void Render();

@@ -51,11 +51,16 @@ class CameraPosition {
   void SetZMovement(Movement movement);
   void SetMovementSpeed(const double x, const double y, const double z);
 
+  void SetAngleDisplacement(const double x, const double y, const double z);
+  void SetAngleSensitivity(const double x, const double y, const double z);
+
  private:
   Vector3 angle_;
   Vector3 position_;
   Vector3 moving_;
   Vector3 movement_speed_;
+  Vector3 angle_sensitivity_;
+  Vector3 heading_;
 };
 
 #endif /* MOCTREE_CAMERAPOSITION_H_ */

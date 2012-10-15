@@ -26,9 +26,17 @@
 
 #include "CameraPosition.h"
 
-CameraPosition::CameraPosition() {
-  // TODO Auto-generated constructor stub
+#include <math.h>
+#include <stdio.h>
 
+CameraPosition::CameraPosition() {
+  angle_sensitivity_.x_ = 1;
+  angle_sensitivity_.y_ = 1;
+  angle_sensitivity_.z_ = 1;
+
+  movement_speed_.x_ = 1;
+  movement_speed_.y_ = 1;
+  movement_speed_.z_ = 1;
 }
 
 CameraPosition::~CameraPosition() {
@@ -36,9 +44,16 @@ CameraPosition::~CameraPosition() {
 }
 
 void CameraPosition::Update(const double& delta_time) {
-  position_.x_ += moving_.x_ * movement_speed_.x_ * delta_time;
+
+  const float pi_over_180 = 0.0174532925f;
+
+  printf("MF: %f\n", sin(angle_.y_ * pi_over_180));
+
+  position_.x_ += sin(angle_.y_ * pi_over_180) * moving_.x_ * movement_speed_.x_
+      * delta_time;
   position_.y_ += moving_.y_ * movement_speed_.y_ * delta_time;
-  position_.z_ += moving_.z_ * movement_speed_.z_ * delta_time;
+  position_.z_ += cos(angle_.y_ * pi_over_180) * moving_.z_ * movement_speed_.z_
+      * delta_time;
 }
 
 void CameraPosition::Reset() {
@@ -66,8 +81,29 @@ void CameraPosition::SetZMovement(Movement movement) {
   moving_.z_ = movement;
 }
 
-void CameraPosition::SetMovementSpeed(const double x, const double y, const double z) {
+void CameraPosition::SetMovementSpeed(const double x, const double y,
+                                      const double z) {
   movement_speed_.x_ = x;
   movement_speed_.y_ = y;
   movement_speed_.z_ = z;
+}
+
+void CameraPosition::SetAngleDisplacement(const double x, const double y,
+                                          const double z) {
+  angle_.x_ += x * angle_sensitivity_.x_;
+  angle_.y_ += y * angle_sensitivity_.y_;
+  angle_.z_ += z * angle_sensitivity_.z_;
+
+  if (angle_.x_ > 89.) {
+    angle_.x_ = 89.;
+  } else if (angle_.x_ < -89.) {
+    angle_.x_ = -89.;
+  }
+}
+
+void CameraPosition::SetAngleSensitivity(const double x, const double y,
+                                         const double z) {
+  angle_sensitivity_.x_ = x;
+  angle_sensitivity_.y_ = y;
+  angle_sensitivity_.z_ = z;
 }
