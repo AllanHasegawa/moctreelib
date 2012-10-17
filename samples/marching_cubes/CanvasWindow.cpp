@@ -69,17 +69,19 @@ void CanvasWindow::OnPaintit(wxPaintEvent& WXUNUSED(event)) {
 void CanvasWindow::Update(const double& delta_time) {
   Refresh(false);
 
+  camera_.Update(delta_time);
+
   rot_ += 0.1 * delta_time;
 }
 
 void CanvasWindow::Render() {
-  camera_.Update(delta_time);
+  camera_.Render();
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glTranslatef(1.5f, 0.0f, -10.0f);            // Move Right And Into The Screen
 
-  glRotatef(rot_, 1.0f, 1.0f, 1.0f);            // Rotate The Cube On X, Y & Z
+  //glRotatef(rot_, 1.0f, 1.0f, 1.0f);            // Rotate The Cube On X, Y & Z
 
   glBegin(GL_QUADS);                  // Start Drawing The Cube
 
@@ -151,7 +153,7 @@ void CanvasWindow::OnMouseMoved(wxMouseEvent& event) {
     const int lpx = mouse_last_posistion_.x_;
     const int lpy = mouse_last_posistion_.y_;
 
-    camera_position_.SetAngleDisplacement(-(py - lpy), px - lpx, 0);
+    camera_.SetAngleDisplacement(-(py - lpy), px - lpx, 0);
   }
 
   mouse_last_posistion_.x_ = px;
@@ -185,11 +187,11 @@ void CanvasWindow::OnKeyPressed(wxKeyEvent& event) {
 
   switch (kc) {
     case WXK_PAGEUP: {
-      camera_position_.SetYMovement(FORWARD);
+      camera_.SetYMovement(FORWARD);
       break;
     }
     case WXK_PAGEDOWN: {
-      camera_position_.SetYMovement(BACKWARD);
+      camera_.SetYMovement(BACKWARD);
       break;
     }
     case WXK_LEFT: {
@@ -201,21 +203,20 @@ void CanvasWindow::OnKeyPressed(wxKeyEvent& event) {
       break;
     }
     case WXK_UP: {
-      camera_position_.SetZMovement(BACKWARD);
-      camera_position_.SetXMovement(BACKWARD);
+      camera_.SetZMovement(BACKWARD);
+      camera_.SetXMovement(BACKWARD);
       break;
     }
     case WXK_DOWN: {
-      camera_position_.SetZMovement(FORWARD);
-      camera_position_.SetXMovement(FORWARD);
+      camera_.SetZMovement(FORWARD);
+      camera_.SetXMovement(FORWARD);
       break;
     }
     case WXK_BACK: {
-      camera_position_.Reset();
+      camera_.Reset();
       break;
     }
   }
-  printf("KD: %d\n", event.GetKeyCode());
 }
 
 void CanvasWindow::OnKeyReleased(wxKeyEvent& event) {
@@ -224,19 +225,18 @@ void CanvasWindow::OnKeyReleased(wxKeyEvent& event) {
   switch (kc) {
     case WXK_LEFT:
     case WXK_RIGHT: {
-      camera_position_.SetXMovement(NONE);
-      camera_position_.SetZMovement(NONE);
+      camera_.SetXMovement(NONE);
+      camera_.SetZMovement(NONE);
       break;
     }
     case WXK_UP:
     case WXK_DOWN: {
-      camera_position_.SetXMovement(NONE);
-      camera_position_.SetZMovement(NONE);
+      camera_.SetXMovement(NONE);
+      camera_.SetZMovement(NONE);
       break;
     }
   }
-  camera_position_.SetYMovement(NONE);
-  printf("KU: %d\n", event.GetKeyCode());
+  camera_.SetYMovement(NONE);
 }
 /*
  * wxWidget events link =X

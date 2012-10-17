@@ -27,6 +27,14 @@
 #ifndef MOCTREE_CAMERA_H_
 #define MOCTREE_CAMERA_H_
 
+#include <Vector3.h>
+
+enum Movement {
+  FORWARD = 1,
+  NONE = 0,
+  BACKWARD = -1
+};
+
 class Camera {
  public:
   Camera();
@@ -34,9 +42,28 @@ class Camera {
 
   void Update(const double& delta_time);
   void Render();
+  void Reset();
+
+  const Vector3 angle();
+  const Vector3 position();
+
+  void SetXMovement(Movement movement);
+  void SetYMovement(Movement movement);
+  void SetZMovement(Movement movement);
+  void SetMovementSpeed(const double x, const double y, const double z);
+
+  void SetAngleDisplacement(const double x, const double y, const double z);
+  void SetAngleSensitivity(const double x, const double y, const double z);
 
  private:
-  CameraPosition camera_position_;
+  Vector3 angle_;
+  Vector3 position_;
+  Vector3 moving_;
+  Vector3 movement_speed_;
+  Vector3 angle_sensitivity_;
+  Vector3 heading_;
+
+  const double kDegreeToRadians_;
 };
 
 #endif /* MOCTREE_CAMERA_H_ */
