@@ -24,45 +24,33 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MOCTREE_CAMERAPOSITION_H_
-#define MOCTREE_CAMERAPOSITION_H_
+#include "Camera.h"
 
-#include <Vector3.h>
+Camera::Camera() {
+  camera_position_.SetMovementSpeed(0.1, 0.1, 0.1);
+  camera_position_.SetAngleSensitivity(0.1, 0.1, 0.1);
+}
 
-enum Movement {
-  FORWARD = 1,
-  NONE = 0,
-  BACKWARD = -1
-};
+Camera::~Camera() {
+}
 
-class CameraPosition {
- public:
-  CameraPosition();
-  virtual ~CameraPosition();
+void Camera::Update(const double& delta_time) {
+  camera_position_.Update(delta_time);
+}
 
-  void Update(const double& delta_time);
-  void Reset();
+void Camera::Render() {
+  GLfloat camera_x_trans = -camera_position_.position().x_;  // Used For Player Translation On The X Axis
+  GLfloat camera_z_trans = -camera_position_.position().z_;  // Used For Player Translation On The Z Axis
+  GLfloat camera_y_trans = -camera_position_.position().y_;  // Used For Bouncing Motion Up And Down
 
-  const Vector3 angle();
-  const Vector3 position();
+  GLfloat camera_x_rot = 360.0f - camera_position_.angle().x_;
+  GLfloat camera_y_rot = 360.0f - camera_position_.angle().y_;  // 360 Degree Angle For Player Direction
 
-  void SetXMovement(Movement movement);
-  void SetYMovement(Movement movement);
-  void SetZMovement(Movement movement);
-  void SetMovementSpeed(const double x, const double y, const double z);
+  glLoadIdentity();
 
-  void SetAngleDisplacement(const double x, const double y, const double z);
-  void SetAngleSensitivity(const double x, const double y, const double z);
+  glRotatef(camera_x_rot, 1.0f, 0, 0);  // Rotate Up And Down To Look Up And Down
+  glRotatef(camera_y_rot, 0, 1.0f, 0);  // Rotate Depending On Direction Player Is Facing
 
- private:
-  Vector3 angle_;
-  Vector3 position_;
-  Vector3 moving_;
-  Vector3 movement_speed_;
-  Vector3 angle_sensitivity_;
-  Vector3 heading_;
+  glTranslatef(camera_x_trans, camera_y_trans, camera_z_trans);  // Translate The Scene Based On Player
+}
 
-  const double kDegreeToRadians_ = 0.0174532925f;
-};
-
-#endif /* MOCTREE_CAMERAPOSITION_H_ */

@@ -24,45 +24,19 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MOCTREE_CAMERAPOSITION_H_
-#define MOCTREE_CAMERAPOSITION_H_
+#ifndef MOCTREE_CAMERA_H_
+#define MOCTREE_CAMERA_H_
 
-#include <Vector3.h>
-
-enum Movement {
-  FORWARD = 1,
-  NONE = 0,
-  BACKWARD = -1
-};
-
-class CameraPosition {
+class Camera {
  public:
-  CameraPosition();
-  virtual ~CameraPosition();
+  Camera();
+  virtual ~Camera();
 
   void Update(const double& delta_time);
-  void Reset();
-
-  const Vector3 angle();
-  const Vector3 position();
-
-  void SetXMovement(Movement movement);
-  void SetYMovement(Movement movement);
-  void SetZMovement(Movement movement);
-  void SetMovementSpeed(const double x, const double y, const double z);
-
-  void SetAngleDisplacement(const double x, const double y, const double z);
-  void SetAngleSensitivity(const double x, const double y, const double z);
+  void Render();
 
  private:
-  Vector3 angle_;
-  Vector3 position_;
-  Vector3 moving_;
-  Vector3 movement_speed_;
-  Vector3 angle_sensitivity_;
-  Vector3 heading_;
-
-  const double kDegreeToRadians_ = 0.0174532925f;
+  CameraPosition camera_position_;
 };
 
-#endif /* MOCTREE_CAMERAPOSITION_H_ */
+#endif /* MOCTREE_CAMERA_H_ */
