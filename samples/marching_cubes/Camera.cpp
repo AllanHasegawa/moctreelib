@@ -32,13 +32,13 @@
 
 Camera::Camera()
     : kDegreeToRadians_(0.0174532925f) {
-  angle_sensitivity_.x_ = 1;
-  angle_sensitivity_.y_ = 1;
-  angle_sensitivity_.z_ = 1;
+  angle_sensitivity_.x_ = 0.1;
+  angle_sensitivity_.y_ = 0.1;
+  angle_sensitivity_.z_ = 0.1;
 
-  movement_speed_.x_ = 1;
-  movement_speed_.y_ = 1;
-  movement_speed_.z_ = 1;
+  movement_speed_.x_ = 0.1;
+  movement_speed_.y_ = 0.1;
+  movement_speed_.z_ = 0.1;
 }
 
 Camera::~Camera() {

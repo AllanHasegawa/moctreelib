@@ -29,6 +29,8 @@
 #include <wx/glcanvas.h>
 #include <stdio.h>
 
+#include <MCTemplate.h>
+
 CanvasWindow::CanvasWindow(wxFrame *parent)
     : pending_setup_(true),
       wxGLCanvas(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize,
@@ -39,6 +41,11 @@ CanvasWindow::CanvasWindow(wxFrame *parent)
   gl_context_ = new wxGLContext(this);
 
   SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+
+  printf("%d\n", MCTemplate::CornersToIndex(1,1,0,0,0,0,0,0));
+  printf("%d\n", MCTemplate::CornersToIndex(0,0,0,0,0,0,0,0));
+  printf("%d\n", MCTemplate::CornersToIndex(1,0,0,0,0,0,0,0));
+  printf("%d\n", MCTemplate::CornersToIndex(1,1,1,1,1,1,1,1));
 }
 
 CanvasWindow::~CanvasWindow() {
