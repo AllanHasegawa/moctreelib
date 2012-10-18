@@ -59,6 +59,11 @@ class CanvasWindow : public wxGLCanvas {
   Vector3 mouse_last_posistion_;
   bool mouse_right_down_;
 
+
+  GLfloat light_ambient_[4];
+  GLfloat light_diffuse_[4];
+  GLfloat light_diffuse_pos_[4];
+
   void Update(const double& delta_time);
   void Render();
   void SetupOpenGLProjection();

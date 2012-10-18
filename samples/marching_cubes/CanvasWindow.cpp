@@ -30,6 +30,7 @@
 #include <stdio.h>
 
 #include <MCTemplate.h>
+#include <MarchingCubes.h>
 
 CanvasWindow::CanvasWindow(wxFrame *parent)
     : pending_setup_(true),
@@ -42,10 +43,6 @@ CanvasWindow::CanvasWindow(wxFrame *parent)
 
   SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 
-  printf("%d\n", MCTemplate::CornersToIndex(1,1,0,0,0,0,0,0));
-  printf("%d\n", MCTemplate::CornersToIndex(0,0,0,0,0,0,0,0));
-  printf("%d\n", MCTemplate::CornersToIndex(1,0,0,0,0,0,0,0));
-  printf("%d\n", MCTemplate::CornersToIndex(1,1,1,1,1,1,1,1));
 }
 
 CanvasWindow::~CanvasWindow() {
@@ -56,12 +53,38 @@ void CanvasWindow::OnPaintit(wxPaintEvent& WXUNUSED(event)) {
   wxGLCanvas::SetCurrent(*gl_context_);
   wxPaintDC(this);
   if (pending_setup_) {
-    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+    light_ambient_[0] = 0.2f;
+    light_ambient_[1] = 0.2f;
+    light_ambient_[2] = 0.2f;
+    light_ambient_[3] = 1.f;
+
+    light_diffuse_[0] = 1.f;
+    light_diffuse_[1] = 1.f;
+    light_diffuse_[2] = 1.f;
+    light_diffuse_[3] = 1.f;
+
+    light_diffuse_pos_[0] = 0.f;
+    light_diffuse_pos_[0] = 5.f;
+    light_diffuse_pos_[0] = -10.f;
+    light_diffuse_pos_[0] = 1.f;
+
+    glClearColor(0.f, 0.f, 0.f, 1.0f);
 
     glClearDepth(1.0);
-    glDepthFunc(GL_LESS);
+    glDepthFunc(GL_LEQUAL);
     glEnable(GL_DEPTH_TEST);
     glShadeModel(GL_SMOOTH);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient_);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse_);
+    glLightfv(GL_LIGHT1, GL_POSITION, light_diffuse_pos_);
+    //glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT1);
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
     SetupOpenGLProjection();
 
@@ -86,11 +109,14 @@ void CanvasWindow::Render() {
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glTranslatef(1.5f, 0.0f, -10.0f);            // Move Right And Into The Screen
+  glTranslatef(0.f, 0.0f, -10.0f);            // Move Right And Into The Screen
+  glRotatef(rot_, 1.0f, 0.0f, 0.0f);
 
-  //glRotatef(rot_, 1.0f, 1.0f, 1.0f);            // Rotate The Cube On X, Y & Z
+  MarchingCubes* mc = MarchingCubes::CreateMarchingCubes();
+  printf("%d\n", mc->IndexRotateX(48+8, 90));
+  mc->GetTemplate(1,0,0,0,0,0,0,0)->Render();
 
-  glBegin(GL_QUADS);                  // Start Drawing The Cube
+  /*glBegin(GL_POLYGON);                  // Start Drawing The Cube
 
   glColor3f(0.0f, 1.0f, 0.0f);          // Set The Color To Green
   glVertex3f(1.0f, 1.0f, -1.0f);          // Top Right Of The Quad (Top)
@@ -121,7 +147,7 @@ void CanvasWindow::Render() {
   glVertex3f(1.0f, 1.0f, 1.0f);          // Top Left Of The Quad (Right)
   glVertex3f(1.0f, -1.0f, 1.0f);          // Bottom Left Of The Quad (Right)
   glVertex3f(1.0f, -1.0f, -1.0f);          // Bottom Right Of The Quad (Right)
-  glEnd();                        // Done Drawing The Quad
+  glEnd();                        // Done Drawing The Quad*/
 
   glFlush();
 }

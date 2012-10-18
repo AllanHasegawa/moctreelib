@@ -27,13 +27,42 @@
 #ifndef MOCTREE_TRIANGLE_H_
 #define MOCTREE_TRIANGLE_H_
 
+#include <wx/glcanvas.h>
+
 #include <Vector3.h>
 
 class Triangle {
  public:
   Vector3 vertices_[3];
   Vector3 normal_;
-};
 
+  /* Triangle = p1, p2, p3
+   *
+   * so:
+   *
+   * U = p2 - p1
+   * V = p3 - p1
+   *
+   * Normal = N = U (CrossProduct) V
+   *
+   */
+  void CalculateNormal() {
+    Vector3 u = vertices_[1].Subtract(vertices_[0]);
+    Vector3 v = vertices_[2].Subtract(vertices_[0]);
+    normal_ = u.CrossProduct(v);
+  }
+
+  void Render() {
+    glBegin(GL_POLYGON);
+    glNormal3f(normal_.x_, normal_.y_, normal_.z_);
+    glColor3f(1, 0, 0);
+    glVertex3f(vertices_[0].x_, vertices_[0].y_, vertices_[0].z_);
+    glColor3f(0, 1, 0);
+    glVertex3f(vertices_[1].x_, vertices_[1].y_, vertices_[1].z_);
+    glColor3f(0, 0, 1);
+    glVertex3f(vertices_[2].x_, vertices_[2].y_, vertices_[2].z_);
+    glEnd();
+  }
+};
 
 #endif /* MOCTREE_TRIANGLE_H_ */

@@ -42,15 +42,13 @@ class MCTemplate {
   }
 
   Triangle* triangles_;
-  const int n_triangles_;
-  const int index_;  // See (Lorensen, 1987)
+  int n_triangles_;
+  int index_;  // See (Lorensen, 1987)
 
-  static inline int CornersToIndex(const bool v1, const bool v2, const bool v3,
-                            const bool v4, const bool v5, const bool v6,
-                            const bool v7, const bool v8) {
-
-    return (v1 << 0) | (v2 << 1) | (v3 << 2) | (v4 << 3) | (v5 << 4) | (v6 << 5)
-        | (v7 << 6) | (v8 << 7);
+  void Render() {
+    for (int i = 0; i < n_triangles_; i++) {
+      triangles_[i].Render();
+    }
   }
 };
 
