@@ -28,7 +28,7 @@
 
 MCTemplate::MCTemplate(const int n_triangles, const int index)
     : n_triangles_(n_triangles),
-      index_(index) {
+      index_(index), complement_(false) {
   triangles_ = new Triangle[n_triangles];
 }
 
@@ -70,4 +70,8 @@ MCTemplate* MCTemplate::RotateZ(const double degrees) {
     triangles_[i].RotateZ(degrees);
   }
   return this;
+}
+
+void MCTemplate::set_complement(const bool complement) {
+  complement_ = complement;
 }

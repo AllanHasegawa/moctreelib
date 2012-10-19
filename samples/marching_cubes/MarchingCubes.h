@@ -41,16 +41,16 @@ class MarchingCubes {
                           const bool v3, const bool v4, const bool v5,
                           const bool v6, const bool v7);
 
-  static inline int CornersToIndex(const bool v0, const bool v1, const bool v2,
+  static inline uint8_t CornersToIndex(const bool v0, const bool v1, const bool v2,
                                    const bool v3, const bool v4, const bool v5,
                                    const bool v6, const bool v7) {
     return (v0 << 0) | (v1 << 1) | (v2 << 2) | (v3 << 3) | (v4 << 4) | (v5 << 5)
         | (v6 << 6) | (v7 << 7);
   }
 
-  int IndexRotateX(const int index, const int degrees);
-  int IndexRotateY(const int index, const int degrees);
-  int IndexRotateZ(const int index, const int degrees);
+  uint8_t IndexRotateX(const uint8_t index, const int degrees);
+  uint8_t IndexRotateY(const uint8_t index, const int degrees);
+  uint8_t IndexRotateZ(const uint8_t index, const int degrees);
   int ConvertVectorToCorner(const Vector3& v);
 
  private:

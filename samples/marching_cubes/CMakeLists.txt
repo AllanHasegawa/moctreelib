@@ -12,6 +12,7 @@ set(SRCS
 	CanvasWindow.cpp
 	Camera.cpp
 	MarchingCubes.cpp
+	MarchingCubesUniques.cpp
 	MCTemplate.cpp
 	Triangle.cpp)
 	

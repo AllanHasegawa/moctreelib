@@ -64,8 +64,8 @@ void CanvasWindow::OnPaintit(wxPaintEvent& WXUNUSED(event)) {
     light_diffuse_[3] = 1.f;
 
     light_diffuse_pos_[0] = 0.f;
-    light_diffuse_pos_[0] = 5.f;
-    light_diffuse_pos_[0] = -10.f;
+    light_diffuse_pos_[0] = 15.f;
+    light_diffuse_pos_[0] = 0.f;
     light_diffuse_pos_[0] = 1.f;
 
     glClearColor(0.f, 0.f, 0.f, 1.0f);
@@ -76,7 +76,7 @@ void CanvasWindow::OnPaintit(wxPaintEvent& WXUNUSED(event)) {
     glShadeModel(GL_SMOOTH);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient_);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient_);
     glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse_);
     glLightfv(GL_LIGHT1, GL_POSITION, light_diffuse_pos_);
     //glEnable(GL_LIGHT0);
@@ -115,21 +115,21 @@ void CanvasWindow::Render() {
   MarchingCubes* mc = MarchingCubes::CreateMarchingCubes();
 
   glPushMatrix();
-  mc->GetTemplate(1, 0, 0, 0, 0, 0, 0, 0)->Render();
+  mc->GetTemplate(0, 1, 0, 0, 1, 1, 1, 0)->Render();
   glPopMatrix();
 
   glPushMatrix();
-  mc->GetTemplate(0, 1, 0, 0, 0, 0, 0, 0)->Render();
+  //mc->GetTemplate(1, 1, 1, 1, 0, 0, 1, 1)->Render();
   glPopMatrix();
 
   glPushMatrix();
-  mc->GetTemplate(0, 0, 1, 0, 0, 0, 0, 0)->Render();
+  //mc->GetTemplate(0, 0, 0, 0, 1, 1, 0, 0)->Render();
   glPopMatrix();
 
   glPushMatrix();
-  mc->GetTemplate(0, 0, 0, 1, 0, 0, 0, 0)->Render();
+  //mc->GetTemplate(0, 0, 0, 0, 0, 0, 1, 1)->Render();
   glPopMatrix();
-
+/*
   glPushMatrix();
   mc->GetTemplate(0, 0, 0, 0, 1, 0, 0, 0)->Render();
   glPopMatrix();
@@ -146,6 +146,9 @@ void CanvasWindow::Render() {
   mc->GetTemplate(0, 0, 0, 0, 0, 0, 0, 1)->Render();
   glPopMatrix();
 
+/*
+ *
+ */
   glFlush();
 }
 
@@ -225,21 +228,19 @@ void CanvasWindow::OnKeyPressed(wxKeyEvent& event) {
       break;
     }
     case WXK_LEFT: {
-      //camera_position_.SetXMovement(BACKWARD);
+      camera_.SetXMovement(BACKWARD);
       break;
     }
     case WXK_RIGHT: {
-      //camera_position_.SetXMovement(FORWARD);
+      camera_.SetXMovement(FORWARD);
       break;
     }
     case WXK_UP: {
       camera_.SetZMovement(BACKWARD);
-      camera_.SetXMovement(BACKWARD);
       break;
     }
     case WXK_DOWN: {
       camera_.SetZMovement(FORWARD);
-      camera_.SetXMovement(FORWARD);
       break;
     }
     case WXK_BACK: {

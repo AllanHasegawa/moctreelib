@@ -45,11 +45,15 @@ Camera::~Camera() {
 }
 
 void Camera::Update(const double& delta_time) {
-  position_.x_ += sin(angle_.y_ * kDegreeToRadians_) * moving_.x_
-      * movement_speed_.x_ * delta_time;
+  position_.x_ += sin(angle_.y_ * kDegreeToRadians_) * moving_.z_
+      * movement_speed_.z_ * delta_time;
+  position_.x_ += sin((angle_.y_+90) * kDegreeToRadians_) * moving_.x_
+        * movement_speed_.x_ * delta_time;
   position_.y_ += moving_.y_ * movement_speed_.y_ * delta_time;
   position_.z_ += cos(angle_.y_ * kDegreeToRadians_) * moving_.z_
       * movement_speed_.z_ * delta_time;
+  position_.z_ += cos((angle_.y_+90) * kDegreeToRadians_) * moving_.x_
+        * movement_speed_.x_ * delta_time;
 }
 
 void Camera::Render() {

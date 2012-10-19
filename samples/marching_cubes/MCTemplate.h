@@ -37,7 +37,8 @@ class MCTemplate {
 
   Triangle* triangles_;
   int n_triangles_;
-  int index_;  // See (Lorensen, 1987)
+  uint8_t index_;  // See (Lorensen, 1987)
+  bool complement_;
 
   void Render();
 
@@ -45,6 +46,8 @@ class MCTemplate {
   MCTemplate* RotateX(const double degrees);
   MCTemplate* RotateY(const double degrees);
   MCTemplate* RotateZ(const double degrees);
+
+  void set_complement(const bool complement);
 };
 
 #endif /* MOCTREE_MCTEMPLATE_H_ */
