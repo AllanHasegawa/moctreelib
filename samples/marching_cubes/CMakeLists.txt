@@ -11,7 +11,9 @@ set(SRCS
 	marching_cubes.cpp
 	CanvasWindow.cpp
 	Camera.cpp
-	MarchingCubes.cpp)
+	MarchingCubes.cpp
+	MCTemplate.cpp
+	Triangle.cpp)
 	
 set(DEPS
 	${wxWidgets_LIBRARIES})

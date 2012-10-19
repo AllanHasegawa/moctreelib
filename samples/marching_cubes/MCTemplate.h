@@ -31,25 +31,20 @@
 
 class MCTemplate {
  public:
-  MCTemplate(const int n_triangles, const int index)
-      : n_triangles_(n_triangles),
-        index_(index) {
-    triangles_ = new Triangle[n_triangles];
-  }
+  MCTemplate(const int n_triangles, const int index);
 
-  virtual ~MCTemplate() {
-    delete[] triangles_;
-  }
+  virtual ~MCTemplate();
 
   Triangle* triangles_;
   int n_triangles_;
   int index_;  // See (Lorensen, 1987)
 
-  void Render() {
-    for (int i = 0; i < n_triangles_; i++) {
-      triangles_[i].Render();
-    }
-  }
+  void Render();
+
+  void CopyTriangles(const MCTemplate& source);
+  MCTemplate* RotateX(const double degrees);
+  MCTemplate* RotateY(const double degrees);
+  MCTemplate* RotateZ(const double degrees);
 };
 
 #endif /* MOCTREE_MCTEMPLATE_H_ */

@@ -61,7 +61,7 @@ class Vector3 {
     const double kC = cos(radians);
     const double kS = sin(radians);
     const double oy = y_;
-    y_ = (oy * kC) + (z_ * (-kS));
+    y_ = (oy * kC) + (z_ * -kS);
     z_ = (oy * kS) + (z_ * kC);
     return this;
   }
@@ -72,7 +72,7 @@ class Vector3 {
     const double kS = sin(radians);
     const double ox = x_;
     x_ = (ox * kC) + (z_ * kS);
-    z_ = (ox * (-kS)) + (z_ * kC);
+    z_ = (ox * -kS) + (z_ * kC);
     return this;
   }
 
@@ -81,7 +81,7 @@ class Vector3 {
     const double kC = cos(radians);
     const double kS = sin(radians);
     const double ox = x_;
-    x_ = (ox * kC) + (y_ * (-kS));
+    x_ = (ox * kC) + (y_ * -kS);
     y_ = (ox * kS) + (y_ * kC);
     return this;
   }

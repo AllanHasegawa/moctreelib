@@ -31,12 +31,32 @@
 MarchingCubes* MarchingCubes::instance_ = NULL;
 
 MarchingCubes::MarchingCubes() {
+
+  for (int i = 0; i < 256; i++) {
+    templates_[i] = NULL;
+  }
+  for (int i = 0; i < 14; i++) {
+    uniques_[i] = NULL;
+  }
   GenerateCornersAsVectors();
   GenerateUniqueTemplates();
   GenerateTemplates();
 }
 
 MarchingCubes::~MarchingCubes() {
+  for (int i = 0; i < 256; i++) {
+    if (templates_[i] != NULL) {
+      delete templates_[i];
+    }
+  }
+  delete[] templates_;
+
+  for (int i = 0; i < 14; i++) {
+    if (uniques_[i] != NULL) {
+      delete uniques_[i];
+    }
+  }
+  delete[] uniques_;
 }
 
 MarchingCubes* MarchingCubes::CreateMarchingCubes() {
@@ -59,7 +79,7 @@ MCTemplate* MarchingCubes::GetTemplate(const bool v0, const bool v1,
 
 void MarchingCubes::GenerateCornersAsVectors() {
   int counter = 0;
-  for (int z = 0; z < 2; z++) {
+  for (int z = 0; z > -2; z--) {
     for (int y = 0; y < 2; y++) {
       for (int x = 0; x < 2; x++) {
         corners_as_vectors_[counter].x_ = x;
@@ -73,46 +93,80 @@ void MarchingCubes::GenerateCornersAsVectors() {
 
 void MarchingCubes::GenerateUniqueTemplates() {
   Triangle tri1, tri2, tri3, tri4, tri5, tri6;
+  int tc = 0;
   int index;
   /*
+   * Reference is the cube center
+   *
    * s Template 1
    */
   index = CornersToIndex(1, 0, 0, 0, 0, 0, 0, 0);
   MCTemplate* t = new MCTemplate(1, index);
 
   // s tri1
-  tri1.vertices_[0].x_ = 0.5f;
-  tri1.vertices_[0].y_ = 0.0f;
-  tri1.vertices_[0].z_ = 0.0f;
+  tri1.vertices_[tc].x_ = -0.5f;
+  tri1.vertices_[tc].y_ = 0.0f;
+  tri1.vertices_[tc].z_ = 0.5f;
+  tc++;
 
-  tri1.vertices_[1].x_ = 0.0f;
-  tri1.vertices_[1].y_ = 0.0f;
-  tri1.vertices_[1].z_ = -0.5f;
+  tri1.vertices_[tc].x_ = 0.0f;
+  tri1.vertices_[tc].y_ = -0.5f;
+  tri1.vertices_[tc].z_ = 0.5f;
+  tc++;
 
-  tri1.vertices_[2].x_ = 0.0f;
-  tri1.vertices_[2].y_ = 0.5f;
-  tri1.vertices_[2].z_ = 0.0f;
+  tri1.vertices_[tc].x_ = -0.5f;
+  tri1.vertices_[tc].y_ = -0.5f;
+  tri1.vertices_[tc].z_ = 0.0f;
+  tc++;
+
   tri1.CalculateNormal();
-  t->triangles_[0] = tri1;
 
-  uniques_[index] = t;
-  templates_[index] = t;
+
+  t->triangles_[0] = tri1;
   // e tri1
+
+  uniques_[0] = t;
+  templates_[index] = t;
   /*
    * e Template 1
    */
 }
 
 void MarchingCubes::GenerateTemplates() {
-  //http://www.euclideanspace.com/maths/geometry/rotations/euler/examples/index.htm
+
+  // empty template
+  templates_[0] = new MCTemplate(0, 0);
+
+  /*
+   * All the cubes rotations at:
+   * http://www.euclideanspace.com/maths/geometry/rotations/euler/examples/index.htm
+   */
+
   const int n_unique_templates_ = 1;
   for (int i = 0; i < n_unique_templates_; i++) {
     MCTemplate* u_t = uniques_[i];
+
     for (int rotx = 0; rotx <= 270; rotx += 90) {
       for (int roty = 0; roty <= 270; roty += 90) {
-        for (int rotz = 0; rotz <= 270; rotz += 90) {
-          int new_index = IndexRotateX(u_t->index_, rotx);
-
+        int new_index = IndexRotateX(u_t->index_, rotx);
+        new_index = IndexRotateY(new_index, roty);
+        if (templates_[new_index] == NULL) {
+          MCTemplate* t = new MCTemplate(u_t->n_triangles_, new_index);
+          t->CopyTriangles(*u_t);
+          t->RotateX(rotx)->RotateY(roty);
+          templates_[new_index] = t;
+        }
+      }
+    }
+    for (int rotz = 90; rotz <= 180; rotz += 90) {  // z only rotates twice
+      for (int roty = 0; roty <= 270; roty += 90) {
+        int new_index = IndexRotateZ(u_t->index_, rotz);
+        new_index = IndexRotateY(new_index, roty);
+        if (templates_[new_index] == NULL) {
+          MCTemplate* t = new MCTemplate(u_t->n_triangles_, new_index);
+          t->CopyTriangles(*u_t);
+          t->RotateZ(rotz)->RotateY(roty);
+          templates_[new_index] = t;
         }
       }
     }
@@ -132,9 +186,10 @@ int MarchingCubes::IndexRotateX(const int index, const int degrees) {
   for (int i = 0; i < 8; i++) {
     const int single_index = index & (1u << i);
     if (single_index) {
+
       Vector3 v = corners_as_vectors_[i];
-      v.Translate(-0.5f, -0.5f, -0.5f)->RotateX(degrees)->Translate(0.5f, 0.5f,
-                                                                    0.5f);
+      v.Translate(-0.5f, -0.5f, 0.5f)->RotateX(degrees)->Translate(0.5f, 0.5f,
+                                                                   -0.5f);
       new_index = new_index | (1u << ConvertVectorToCorner(v));
     }
   }
@@ -156,8 +211,8 @@ int MarchingCubes::IndexRotateY(const int index, const int degrees) {
     const int single_index = index & (1u << i);
     if (single_index) {
       Vector3 v = corners_as_vectors_[i];
-      v.Translate(-0.5f, -0.5f, -0.5f)->RotateY(degrees)->Translate(0.5f, 0.5f,
-                                                                    0.5f);
+      v.Translate(-0.5f, -0.5f, 0.5f)->RotateY(degrees)->Translate(0.5f, 0.5f,
+                                                                   -0.5f);
       new_index = new_index | (1u << ConvertVectorToCorner(v));
     }
   }
@@ -179,8 +234,8 @@ int MarchingCubes::IndexRotateZ(const int index, const int degrees) {
     const int single_index = index & (1u << i);
     if (single_index) {
       Vector3 v = corners_as_vectors_[i];
-      v.Translate(-0.5f, -0.5f, -0.5f)->RotateZ(degrees)->Translate(0.5f, 0.5f,
-                                                                    0.5f);
+      v.Translate(-0.5f, -0.5f, 0.5f)->RotateZ(degrees)->Translate(0.5f, 0.5f,
+                                                                   -0.5f);
       new_index = new_index | (1u << ConvertVectorToCorner(v));
     }
   }
@@ -197,6 +252,6 @@ int MarchingCubes::ConvertVectorToCorner(const Vector3& v) {
     }
   }
 
-  printf("FUUUU: %f, %f, %f\n", v.x_, v.y_, v.z_);
+  printf("ERROR ConvertVectorToCorner: %f, %f, %f\n", v.x_, v.y_, v.z_);
   return -1;
 }

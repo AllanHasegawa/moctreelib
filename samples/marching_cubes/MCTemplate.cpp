@@ -24,24 +24,50 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MOCTREE_TRIANGLE_H_
-#define MOCTREE_TRIANGLE_H_
+#include <MCTemplate.h>
 
-#include <wx/glcanvas.h>
+MCTemplate::MCTemplate(const int n_triangles, const int index)
+    : n_triangles_(n_triangles),
+      index_(index) {
+  triangles_ = new Triangle[n_triangles];
+}
 
-#include <Vector3.h>
+MCTemplate::~MCTemplate() {
+  delete[] triangles_;
+}
 
-class Triangle {
- public:
-  Vector3 vertices_[3];
-  Vector3 normal_;
+void MCTemplate::Render() {
+  for (int i = 0; i < n_triangles_; i++) {
+    triangles_[i].Render();
+  }
+}
 
-  void CalculateNormal();
+void MCTemplate::CopyTriangles(const MCTemplate& source) {
+  if (source.n_triangles_ != n_triangles_) {
+    return;
+  }
+  for (int i = 0; i < n_triangles_; i++) {
+    triangles_[i] = source.triangles_[i];
+  }
+}
 
-  void Render();
-  Triangle* RotateX(const double degrees);
-  Triangle* RotateY(const double degrees);
-  Triangle* RotateZ(const double degrees);
-};
+MCTemplate* MCTemplate::RotateX(const double degrees) {
+  for (int i = 0; i < n_triangles_; i++) {
+    triangles_[i].RotateX(degrees);
+  }
+  return this;
+}
 
-#endif /* MOCTREE_TRIANGLE_H_ */
+MCTemplate* MCTemplate::RotateY(const double degrees) {
+  for (int i = 0; i < n_triangles_; i++) {
+    triangles_[i].RotateY(degrees);
+  }
+  return this;
+}
+
+MCTemplate* MCTemplate::RotateZ(const double degrees) {
+  for (int i = 0; i < n_triangles_; i++) {
+    triangles_[i].RotateZ(degrees);
+  }
+  return this;
+}

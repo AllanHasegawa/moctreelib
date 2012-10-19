@@ -84,6 +84,7 @@ void CanvasWindow::OnPaintit(wxPaintEvent& WXUNUSED(event)) {
 
     glEnable(GL_LIGHTING);
     glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_NORMALIZE);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
     SetupOpenGLProjection();
@@ -109,45 +110,41 @@ void CanvasWindow::Render() {
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glTranslatef(0.f, 0.0f, -10.0f);            // Move Right And Into The Screen
-  glRotatef(rot_, 1.0f, 0.0f, 0.0f);
+  //glRotatef(rot_, 0.0f, 1.0f, 0.0f);
 
   MarchingCubes* mc = MarchingCubes::CreateMarchingCubes();
-  printf("%d\n", mc->IndexRotateX(48+8, 90));
-  mc->GetTemplate(1,0,0,0,0,0,0,0)->Render();
 
-  /*glBegin(GL_POLYGON);                  // Start Drawing The Cube
+  glPushMatrix();
+  mc->GetTemplate(1, 0, 0, 0, 0, 0, 0, 0)->Render();
+  glPopMatrix();
 
-  glColor3f(0.0f, 1.0f, 0.0f);          // Set The Color To Green
-  glVertex3f(1.0f, 1.0f, -1.0f);          // Top Right Of The Quad (Top)
-  glVertex3f(-1.0f, 1.0f, -1.0f);          // Top Left Of The Quad (Top)
-  glVertex3f(-1.0f, 1.0f, 1.0f);          // Bottom Left Of The Quad (Top)
-  glVertex3f(1.0f, 1.0f, 1.0f);          // Bottom Right Of The Quad (Top)
-  glColor3f(1.0f, 0.5f, 0.0f);          // Set The Color To Orange
-  glVertex3f(1.0f, -1.0f, 1.0f);          // Top Right Of The Quad (Bottom)
-  glVertex3f(-1.0f, -1.0f, 1.0f);          // Top Left Of The Quad (Bottom)
-  glVertex3f(-1.0f, -1.0f, -1.0f);          // Bottom Left Of The Quad (Bottom)
-  glVertex3f(1.0f, -1.0f, -1.0f);          // Bottom Right Of The Quad (Bottom)
-  glColor3f(1.0f, 0.0f, 0.0f);          // Set The Color To Red
-  glVertex3f(1.0f, 1.0f, 1.0f);          // Top Right Of The Quad (Front)
-  glVertex3f(-1.0f, 1.0f, 1.0f);          // Top Left Of The Quad (Front)
-  glVertex3f(-1.0f, -1.0f, 1.0f);          // Bottom Left Of The Quad (Front)
-  glVertex3f(1.0f, -1.0f, 1.0f);          // Bottom Right Of The Quad (Front)
-  glColor3f(1.0f, 1.0f, 0.0f);          // Set The Color To Yellow
-  glVertex3f(1.0f, -1.0f, -1.0f);          // Bottom Left Of The Quad (Back)
-  glVertex3f(-1.0f, -1.0f, -1.0f);          // Bottom Right Of The Quad (Back)
-  glVertex3f(-1.0f, 1.0f, -1.0f);          // Top Right Of The Quad (Back)
-  glVertex3f(1.0f, 1.0f, -1.0f);  // Top Left Of The Quad (Back)glColor3f(0.0f,0.0f,1.0f);          // Set The Color To Blue
-  glVertex3f(-1.0f, 1.0f, 1.0f);          // Top Right Of The Quad (Left)
-  glVertex3f(-1.0f, 1.0f, -1.0f);          // Top Left Of The Quad (Left)
-  glVertex3f(-1.0f, -1.0f, -1.0f);          // Bottom Left Of The Quad (Left)
-  glVertex3f(-1.0f, -1.0f, 1.0f);          // Bottom Right Of The Quad (Left)
-  glColor3f(1.0f, 0.0f, 1.0f);          // Set The Color To Violet
-  glVertex3f(1.0f, 1.0f, -1.0f);          // Top Right Of The Quad (Right)
-  glVertex3f(1.0f, 1.0f, 1.0f);          // Top Left Of The Quad (Right)
-  glVertex3f(1.0f, -1.0f, 1.0f);          // Bottom Left Of The Quad (Right)
-  glVertex3f(1.0f, -1.0f, -1.0f);          // Bottom Right Of The Quad (Right)
-  glEnd();                        // Done Drawing The Quad*/
+  glPushMatrix();
+  mc->GetTemplate(0, 1, 0, 0, 0, 0, 0, 0)->Render();
+  glPopMatrix();
+
+  glPushMatrix();
+  mc->GetTemplate(0, 0, 1, 0, 0, 0, 0, 0)->Render();
+  glPopMatrix();
+
+  glPushMatrix();
+  mc->GetTemplate(0, 0, 0, 1, 0, 0, 0, 0)->Render();
+  glPopMatrix();
+
+  glPushMatrix();
+  mc->GetTemplate(0, 0, 0, 0, 1, 0, 0, 0)->Render();
+  glPopMatrix();
+
+  glPushMatrix();
+  mc->GetTemplate(0, 0, 0, 0, 0, 1, 0, 0)->Render();
+  glPopMatrix();
+
+  glPushMatrix();
+  mc->GetTemplate(0, 0, 0, 0, 0, 0, 1, 0)->Render();
+  glPopMatrix();
+
+  glPushMatrix();
+  mc->GetTemplate(0, 0, 0, 0, 0, 0, 0, 1)->Render();
+  glPopMatrix();
 
   glFlush();
 }
@@ -273,7 +270,7 @@ void CanvasWindow::OnKeyReleased(wxKeyEvent& event) {
 }
 /*
  * wxWidget events link =X
- */                        //
+ */  //
 BEGIN_EVENT_TABLE(CanvasWindow, wxGLCanvas)   //
 EVT_MOUSEWHEEL(CanvasWindow::OnMouseWheelMoved)  //
 EVT_MOTION(CanvasWindow::OnMouseMoved)//
