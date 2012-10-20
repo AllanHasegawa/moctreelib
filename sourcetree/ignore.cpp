@@ -24,8 +24,12 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <moctree/MOctree.h>
+#include <moctree/MOctreeCell.h>
+#include <moctree/classic/ClassicOctree.h>
 
 void ______ignore(void) {
   // CMake force the use of atleast ONE source file :(
+
 }
 

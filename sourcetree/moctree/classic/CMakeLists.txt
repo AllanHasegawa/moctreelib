@@ -1,1 +1,3 @@
-add_headers(ClassicOctreeCell.h ClassicOctree.h)
+add_headers(
+		ClassicOctree.h
+		ClassicOctreeVoxel.h)

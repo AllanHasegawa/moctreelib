@@ -24,53 +24,41 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <iostream>
-#include <moctree/MOctree.h>
-#include <moctree/classic/ClassicOctree.h>
-#include <moctree/classic/ClassicOctreeCell.h>
+#ifndef MOCTREE_MOCTREECELL_H_
+#define MOCTREE_MOCTREECELL_H_
 
-int main() {
-  using namespace std;
+#include <stdint.h>
 
-  int types[2];
-  types[0] = 1;
-  types[1] = 2;
+namespace moctree {
 
-  moctree::MOctree<int> *t0;
-  t0 = new moctree::ClassicOctree<int>(16);
+template<class T>
+class ClassicOctreeVoxel;
 
-  // One block of size 2x2x2
-  for (int x = 0; x < 2; x++) {
-    for (int y = 0; y < 2; y++) {
-      for (int z = 0; z < 2; z++) {
-        t0->InsertCell(x, y, z, types + 0);
-      }
-    }
+template<class T>
+class MOctreeCell {
+  friend class ClassicOctreeVoxel<T>;
+ public:
+  MOctreeCell()
+      : x_(0),
+        y_(0),
+        z_(0),
+        data_(NULL) {
+
   }
 
-  // A Single cell
-  t0->InsertCell(2, 3, 1, types + 1);
+  virtual ~MOctreeCell() {
 
-  // Lets insert a cell, then destroy, t0 will get back to
-  // previous state :)
-  t0->InsertCell(2, 3, 2, types + 1);
-  t0->DeleteCell(2, 3, 2);
+  }
 
-  cout << t0->ToString() << endl;
+  uint32_t x_;
+  uint32_t y_;
+  uint32_t z_;
+  T* data_;
 
-  cout << "Hello" << endl;
+ private:
+  ClassicOctreeVoxel<T>* classic_octree_voxel_;
+};
 
-  cout << "T0: " << types + 0 << endl << "T1: " << types + 1 << endl;
+}  // namespace moctree
 
-  cout << t0->GetData(0, 0, 0) << endl;
-  cout << t0->GetData(2, 3, 1) << endl;
-
-  cout << t0->GetCell(2, 3, 1).data_ << endl;
-  cout << t0->GetNeighbor(t0->GetCell(2, 3, 0), 0, 0, 1).data_ << endl;
-
-  cout << "World!" << endl;
-
-  delete t0;
-
-  return 0;
-}
+#endif /* MOCTREE_MOCTREECELL_H_ */
