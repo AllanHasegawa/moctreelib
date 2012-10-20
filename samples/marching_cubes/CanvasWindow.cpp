@@ -29,6 +29,9 @@
 #include <wx/glcanvas.h>
 #include <stdio.h>
 
+#include <moctree/classic/ClassicOctree.h>
+#include <moctree/MOctreeCell.h>
+
 #include <MCTemplate.h>
 #include <MarchingCubes.h>
 
@@ -43,6 +46,8 @@ CanvasWindow::CanvasWindow(wxFrame *parent)
 
   SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 
+  SetupOctree();
+  CreateMesh();
 }
 
 CanvasWindow::~CanvasWindow() {
@@ -111,44 +116,54 @@ void CanvasWindow::Render() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   //glRotatef(rot_, 0.0f, 1.0f, 0.0f);
-
   MarchingCubes* mc = MarchingCubes::CreateMarchingCubes();
-
-  glPushMatrix();
-  mc->GetTemplate(0, 1, 0, 0, 1, 1, 1, 0)->Render();
-  glPopMatrix();
-
-  glPushMatrix();
-  //mc->GetTemplate(1, 1, 1, 1, 0, 0, 1, 1)->Render();
-  glPopMatrix();
-
-  glPushMatrix();
-  //mc->GetTemplate(0, 0, 0, 0, 1, 1, 0, 0)->Render();
-  glPopMatrix();
-
-  glPushMatrix();
-  //mc->GetTemplate(0, 0, 0, 0, 0, 0, 1, 1)->Render();
-  glPopMatrix();
-/*
-  glPushMatrix();
-  mc->GetTemplate(0, 0, 0, 0, 1, 0, 0, 0)->Render();
-  glPopMatrix();
-
-  glPushMatrix();
-  mc->GetTemplate(0, 0, 0, 0, 0, 1, 0, 0)->Render();
-  glPopMatrix();
-
-  glPushMatrix();
   mc->GetTemplate(0, 0, 0, 0, 0, 0, 1, 0)->Render();
-  glPopMatrix();
+  mc->GetTemplate(0, 0, 0, 0, 0, 1, 0, 0)->Render();
+  mc->GetTemplate(0, 0, 1, 0, 0, 0, 0, 0)->Render();
+  mc->GetTemplate(0, 0, 0, 0, 0, 0, 0, 0)->Render();
 
-  glPushMatrix();
-  mc->GetTemplate(0, 0, 0, 0, 0, 0, 0, 1)->Render();
-  glPopMatrix();
+  /*for (std::vector<Triangle>::iterator i = mesh_.begin(); i != mesh_.end();
+      i++) {
+    i->Render();
+  }
+  /*
 
-/*
- *
- */
+
+   glPushMatrix();
+   mc->GetTemplate(0, 1, 0, 0, 1, 1, 1, 0)->Render();
+   glPopMatrix();
+
+   glPushMatrix();
+   //mc->GetTemplate(1, 1, 1, 1, 0, 0, 1, 1)->Render();
+   glPopMatrix();
+
+   glPushMatrix();
+   //mc->GetTemplate(0, 0, 0, 0, 1, 1, 0, 0)->Render();
+   glPopMatrix();
+
+   glPushMatrix();
+   //mc->GetTemplate(0, 0, 0, 0, 0, 0, 1, 1)->Render();
+   glPopMatrix();
+   /*
+   glPushMatrix();
+   mc->GetTemplate(0, 0, 0, 0, 1, 0, 0, 0)->Render();
+   glPopMatrix();
+
+   glPushMatrix();
+   mc->GetTemplate(0, 0, 0, 0, 0, 1, 0, 0)->Render();
+   glPopMatrix();
+
+   glPushMatrix();
+   mc->GetTemplate(0, 0, 0, 0, 0, 0, 1, 0)->Render();
+   glPopMatrix();
+
+   glPushMatrix();
+   mc->GetTemplate(0, 0, 0, 0, 0, 0, 0, 1)->Render();
+   glPopMatrix();
+
+   /*
+   *
+   */
   glFlush();
 }
 
@@ -269,11 +284,209 @@ void CanvasWindow::OnKeyReleased(wxKeyEvent& event) {
   }
   camera_.SetYMovement(NONE);
 }
+
+void CanvasWindow::SetupOctree() {
+  moctree_ = new moctree::ClassicOctree<int>(16);
+  moctree_data_ = 1;
+
+  for (int z = 0; z < 2; z++) {
+    for (int y = 0; y < 2; y++) {
+      for (int x = 0; x < 2; x++) {
+        moctree_->InsertCell(x, y, z, &moctree_data_);
+      }
+    }
+  }
+}
+
+void CanvasWindow::CreateMesh() {
+  MarchingCubes* mc = MarchingCubes::CreateMarchingCubes();
+
+  int size = 16;
+  bool corners[8][8];
+
+  for (int z = 0; z < size; z += 2) {
+    for (int y = 0; y < size; y += 2) {
+      for (int x = 0; x < size; x += 2) {
+        printf("Meshing: %d/%d/%d\n", x, y, z);
+        moctree::MOctreeCell<int> c = moctree_->GetCell(x, y, z);
+        if (c.data_ == NULL) {
+          continue;
+        }
+
+        // all corners belongs to the "outside"
+        for (int i = 0; i < 8; i++) {
+          for (int j = 0; j < 8; j++) {
+            corners[i][j] = false;
+          }
+        }
+        // center corners belongs to the "inside"
+        for (int i = 0; i < 8; i++) {
+          corners[i][7 - i] = true;
+        }
+
+        for (int n_z = 1; n_z > -2; n_z--) {
+          for (int n_y = -1; n_y < 2; n_y++) {
+            for (int n_x = -1; n_x < 2; n_x++) {
+              if (n_z == 0 && n_y == 0 && n_x == 0) {
+                continue;
+              }
+              moctree::MOctreeCell<int> n_c;
+              try {
+                n_c = moctree_->GetNeighbor(c, x + n_x, y + n_y, z + n_z);
+                if (n_c.data_ == NULL) {
+                  continue;
+                }
+
+                if (n_z == 1) {
+                  if (n_y == -1) {
+                    if (n_x == -1) {
+                      corners[0][0] = true;
+                    } else if (n_x == 0) {
+                      corners[0][1] = true;
+                      corners[1][0] = true;
+                    } else if (n_x == 1) {
+                      corners[1][0] = true;
+                    }
+                  } else if (n_y == 0) {
+                    if (n_x == -1) {
+                      corners[0][2] = true;
+                      corners[2][0] = true;
+                    } else if (n_x == 0) {
+                      corners[0][3] = true;
+                      corners[1][2] = true;
+                      corners[2][1] = true;
+                      corners[3][0] = true;
+                    } else if (n_x == 1) {
+                      corners[1][3] = true;
+                      corners[3][1] = true;
+                    }
+                  } else if (n_y == 1) {
+                    if (n_x == -1) {
+                      corners[2][2] = true;
+                    } else if (n_x == 0) {
+                      corners[2][3] = true;
+                      corners[3][2] = true;
+                    } else if (n_x == 1) {
+                      corners[3][3] = true;
+                    }
+                  }  // n_z == 1
+                } else if (n_z == 0) {
+                  if (n_y == -1) {
+                    if (n_x == -1) {
+                      corners[0][4] = true;
+                      corners[4][0] = true;
+                    } else if (n_x == 0) {
+                      corners[0][5] = true;
+                      corners[1][4] = true;
+                      corners[4][1] = true;
+                      corners[5][0] = true;
+                    } else if (n_x == 1) {
+                      corners[1][5] = true;
+                      corners[5][1] = true;
+                    }
+                  } else if (n_y == 0) {
+                    if (n_x == -1) {
+                      corners[0][6] = true;
+                      corners[2][4] = true;
+                      corners[4][2] = true;
+                      corners[6][0] = true;
+                    } else if (n_x == 0) {
+                      //corners[0][1] = true;
+                      //corners[1][0] = true;
+                    } else if (n_x == 1) {
+                      corners[1][7] = true;
+                      corners[3][5] = true;
+                      corners[5][3] = true;
+                      corners[7][1] = true;
+                    }
+                  } else if (n_y == 1) {
+                    if (n_x == -1) {
+                      corners[2][6] = true;
+                      corners[6][2] = true;
+                    } else if (n_x == 0) {
+                      corners[2][7] = true;
+                      corners[3][6] = true;
+                      corners[6][3] = true;
+                      corners[7][2] = true;
+                    } else if (n_x == 1) {
+                      corners[3][7] = true;
+                      corners[7][3] = true;
+                    }
+                  }  // n_z == 0
+                } else if (n_z == -1) {
+                  if (n_y == -1) {
+                    if (n_x == -1) {
+                      corners[4][4] = true;
+                    } else if (n_x == 0) {
+                      corners[4][1] = true;
+                      corners[5][0] = true;
+                    } else if (n_x == 1) {
+                      corners[5][1] = true;
+                    }
+                  } else if (n_y == 0) {
+                    if (n_x == -1) {
+                      corners[4][6] = true;
+                      corners[6][4] = true;
+                    } else if (n_x == 0) {
+                      corners[4][7] = true;
+                      corners[5][6] = true;
+                      corners[6][5] = true;
+                      corners[7][4] = true;
+                    } else if (n_x == 1) {
+                      corners[5][7] = true;
+                      corners[7][5] = true;
+                    }
+                  } else if (n_y == 1) {
+                    if (n_x == -1) {
+                      corners[6][6] = true;
+                    } else if (n_x == 0) {
+                      corners[6][7] = true;
+                      corners[7][6] = true;
+                    } else if (n_x == 1) {
+                      corners[7][7] = true;
+                    }
+                  }
+                }
+                int c_i = 0;
+                for (int c_z = 0; c_z < 2; c_z++) {
+                  for (int c_y = 0; c_y < 2; c_y++) {
+                    for (int c_x = 0; c_x < 2; c_x++) {
+                      int ti = 0;
+                      MCTemplate *cube = mc->GetTemplate(corners[c_i][ti++],
+                                                         corners[c_i][ti++],
+                                                         corners[c_i][ti++],
+                                                         corners[c_i][ti++],
+                                                         corners[c_i][ti++],
+                                                         corners[c_i][ti++],
+                                                         corners[c_i][ti++],
+                                                         corners[c_i][ti++]);
+                      c_i++;
+                      for (int t_n = 0; t_n < cube->n_triangles_; t_n++) {
+                        Triangle t = cube->triangles_[t_n];
+                        printf("%d %d %d\n", x, y, z);
+                        t.Translate(c_x - 0.5, c_y - 0.5, -c_z + 0.5);
+                        //t.Translate(x * 4, y * 4, z * 4);
+                        mesh_.push_back(t);
+                      }
+                    }
+                  }
+                }
+              } catch (std::exception& e) {
+              }
+            }
+          }
+        }
+
+      }
+    }
+  }
+}
 /*
  * wxWidget events link =X
  */  //
-BEGIN_EVENT_TABLE(CanvasWindow, wxGLCanvas)   //
-EVT_MOUSEWHEEL(CanvasWindow::OnMouseWheelMoved)  //
+BEGIN_EVENT_TABLE(CanvasWindow, wxGLCanvas)
+//
+EVT_MOUSEWHEEL (CanvasWindow::OnMouseWheelMoved)  //
 EVT_MOTION(CanvasWindow::OnMouseMoved)//
 EVT_LEFT_DOWN(CanvasWindow::OnMouseLeftDown)//
 EVT_LEFT_UP(CanvasWindow::OnMouseLeftUp)//
@@ -285,4 +498,5 @@ EVT_KEY_UP(CanvasWindow::OnKeyReleased)//
 EVT_PAINT (CanvasWindow::OnPaintit)//
 EVT_SIZE(CanvasWindow::OnResized)//
 EVT_IDLE(CanvasWindow::OnIdle)//
-END_EVENT_TABLE()//
+END_EVENT_TABLE()
+//

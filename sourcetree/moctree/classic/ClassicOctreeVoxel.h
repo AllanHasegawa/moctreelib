@@ -37,12 +37,13 @@ namespace moctree {
 template<class T>
 class ClassicOctreeVoxel {
  public:
-  ClassicOctreeVoxel(uint32_t x, uint32_t y, uint32_t z, uint32_t size)
+  ClassicOctreeVoxel(uint32_t x, uint32_t y, uint32_t z, uint32_t size, uint32_t tree_max_size)
       : x_(x),
         y_(y),
         z_(z),
         data_(NULL),
         size_(size),
+        tree_max_size_(tree_max_size),
         children_(NULL),
         father_(NULL) {
   }
@@ -105,6 +106,9 @@ class ClassicOctreeVoxel {
   }
 
   MOctreeCell<T> GetCell(const uint32_t x, const uint32_t y, const uint32_t z) {
+    if (x > tree_max_size_ || y > tree_max_size_ || z > tree_max_size_) {
+      throw std::exception();
+    }
     // if there is data BEFORE hitting the bottom of the tree
     // or if is the actual cell
     // or has no where to go
@@ -205,6 +209,7 @@ class ClassicOctreeVoxel {
   uint32_t z_;
   T* data_;
   uint32_t size_;
+  uint32_t tree_max_size_;
   ClassicOctreeVoxel<T>** children_;
   ClassicOctreeVoxel<T>* father_;
 
@@ -227,7 +232,7 @@ class ClassicOctreeVoxel {
           for (int x = 0; x < 2; x++) {
             children_[counter] = new ClassicOctreeVoxel<T>(
                 x_father + (x * size_children), y_father + (y * size_children),
-                z_father + (z * size_children), size_children);
+                z_father + (z * size_children), size_children, tree_max_size_);
             children_[counter]->set_father(this);
             counter++;
           }

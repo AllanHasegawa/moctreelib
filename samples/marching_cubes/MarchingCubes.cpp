@@ -95,6 +95,7 @@ void MarchingCubes::GenerateTemplates() {
 
   // empty template
   templates_[0] = new MCTemplate(0, 0);
+  templates_[CornersToIndex(1, 1, 1, 1, 1, 1, 1, 1)] = new MCTemplate(0, 0);
 
   /*
    * All the cubes rotations at:

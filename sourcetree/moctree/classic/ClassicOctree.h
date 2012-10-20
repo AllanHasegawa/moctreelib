@@ -38,7 +38,7 @@ class ClassicOctree : public MOctree<T> {
  public:
   ClassicOctree(const uint32_t size)
       : size_(size) {
-    root_ = new ClassicOctreeVoxel<T>(0, 0, 0, size);
+    root_ = new ClassicOctreeVoxel<T>(0, 0, 0, size, size);
   }
   ~ClassicOctree() {
 
@@ -78,6 +78,10 @@ class ClassicOctree : public MOctree<T> {
 
   std::string ToString() {
     return root_->ToStringRecursive(0, 0);
+  }
+
+  int size() {
+    return size_;
   }
 
  private:

@@ -27,15 +27,15 @@
 #include <Triangle.h>
 
 /* Triangle = p1, p2, p3
-   *
-   * so:
-   *
-   * U = p2 - p1
-   * V = p3 - p1
-   *
-   * Normal = N = U (CrossProduct) V
-   *
-   */
+ *
+ * so:
+ *
+ * U = p2 - p1
+ * V = p3 - p1
+ *
+ * Normal = N = U (CrossProduct) V
+ *
+ */
 void Triangle::CalculateNormal() {
   Vector3 u = vertices_[1].Subtract(vertices_[0]);
   Vector3 v = vertices_[2].Subtract(vertices_[0]);
@@ -77,5 +77,12 @@ Triangle* Triangle::RotateZ(const double degrees) {
     vertices_[i].RotateZ(degrees);
   }
   normal_.RotateZ(degrees);
+  return this;
+}
+
+Triangle* Triangle::Translate(const double x, const double y, const double z) {
+  for (int i = 0; i < 3; i++) {
+    vertices_[i].Translate(x, y, z);
+  }
   return this;
 }

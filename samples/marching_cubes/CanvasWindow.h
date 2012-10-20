@@ -27,9 +27,12 @@
 #ifndef MOCTREE_CANVASWINDOW_H_
 #define MOCTREE_CANVASWINDOW_H_
 
+#include <vector>
+
 #include <wx/wx.h>
 #include <wx/glcanvas.h>
 
+#include <Triangle.h>
 #include <Camera.h>
 #include <Vector3.h>
 #include <moctree/MOctree.h>
@@ -65,6 +68,9 @@ class CanvasWindow : public wxGLCanvas {
   GLfloat light_diffuse_pos_[4];
 
   moctree::MOctree<int>* moctree_;
+  int moctree_data_;
+
+  std::vector<Triangle> mesh_;
 
   void Update(const double& delta_time);
   void Render();
