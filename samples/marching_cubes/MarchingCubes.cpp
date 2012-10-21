@@ -105,49 +105,91 @@ void MarchingCubes::GenerateTemplates() {
   for (int i = 0; i < n_unique_templates_; i++) {
     MCTemplate* u_t = uniques_[i];
 
-    for (int rotx = 0; rotx <= 270; rotx += 90) {
-      for (int roty = 0; roty <= 270; roty += 90) {
-        // Normal combination
-        uint8_t new_index = IndexRotateX(u_t->index_, rotx);
-        new_index = IndexRotateY(new_index, roty);
-        if (templates_[new_index] == NULL) {
-          MCTemplate* t = new MCTemplate(u_t->n_triangles_, new_index);
-          t->CopyTriangles(*u_t);
-          t->RotateX(rotx)->RotateY(roty);
-          templates_[new_index] = t;
+    for (int mirror = 0; mirror < 4; mirror++) {
+
+      uint8_t mirror_index = u_t->index_;
+      if (mirror == 1) {
+        mirror_index = IndexMirrorX(u_t->index_);
+      } else if (mirror == 2) {
+        mirror_index = IndexMirrorY(u_t->index_);
+      } else if (mirror == 3) {
+        mirror_index = IndexMirrorZ(u_t->index_);
+      }
+      for (int rotx = -90; rotx <= 180; rotx += 90) {
+        for (int roty = 0; roty <= 270; roty += 90) {
+
+          // Normal combination
+          uint8_t new_index = IndexRotateX(mirror_index, rotx);
+          new_index = IndexRotateY(new_index, roty);
+
+          if (templates_[new_index] == NULL) {
+            MCTemplate* t = new MCTemplate(u_t->n_triangles_, new_index);
+            t->CopyTriangles(*u_t);
+            if (mirror == 1) {
+              t->MirrorX();
+            } else if (mirror == 2) {
+              t->MirrorY();
+            } else if (mirror == 3) {
+              t->MirrorZ();
+            }
+            t->RotateX(rotx)->RotateY(roty);
+            templates_[new_index] = t;
+          }
+          // Complement combination
+          new_index = ~new_index;
+          if (templates_[new_index] == NULL) {
+            MCTemplate* t = new MCTemplate(u_t->n_triangles_, new_index);
+            t->CopyTriangles(*u_t);
+            if (mirror == 1) {
+              t->MirrorX();
+            } else if (mirror == 2) {
+              t->MirrorY();
+            } else if (mirror == 3) {
+              t->MirrorZ();
+            }
+            t->RotateX(rotx)->RotateY(roty);
+            t->set_complement(true);
+            templates_[new_index] = t;
+          }
         }
-        // Complement combination
-        new_index = ~new_index;
-        if (templates_[new_index] == NULL) {
-          MCTemplate* t = new MCTemplate(u_t->n_triangles_, new_index);
-          t->CopyTriangles(*u_t);
-          t->RotateX(rotx)->RotateY(roty);
-          t->set_complement(true);
-          templates_[new_index] = t;
+      }
+      for (int rotz = 90; rotz <= 180; rotz += 90) {  // z only rotates twice
+        for (int roty = 0; roty <= 270; roty += 90) {
+          uint8_t new_index = IndexRotateZ(mirror_index, rotz);
+          new_index = IndexRotateY(new_index, roty);
+          if (templates_[new_index] == NULL) {
+            MCTemplate* t = new MCTemplate(u_t->n_triangles_, new_index);
+            t->CopyTriangles(*u_t);
+            if (mirror == 1) {
+              t->MirrorX();
+            } else if (mirror == 2) {
+              t->MirrorY();
+            } else if (mirror == 3) {
+              t->MirrorZ();
+            }
+            t->RotateZ(rotz)->RotateY(roty);
+            templates_[new_index] = t;
+          }
+          // Complement combination
+          new_index = ~new_index;
+          if (templates_[new_index] == NULL) {
+            MCTemplate* t = new MCTemplate(u_t->n_triangles_, new_index);
+            t->CopyTriangles(*u_t);
+            if (mirror == 1) {
+              t->MirrorX();
+            } else if (mirror == 2) {
+              t->MirrorY();
+            } else if (mirror == 3) {
+              t->MirrorZ();
+            }
+            t->RotateZ(rotz)->RotateY(roty);
+            t->set_complement(true);
+            templates_[new_index] = t;
+          }
         }
       }
     }
-    for (int rotz = 90; rotz <= 180; rotz += 90) {  // z only rotates twice
-      for (int roty = 0; roty <= 270; roty += 90) {
-        uint8_t new_index = IndexRotateZ(u_t->index_, rotz);
-        new_index = IndexRotateY(new_index, roty);
-        if (templates_[new_index] == NULL) {
-          MCTemplate* t = new MCTemplate(u_t->n_triangles_, new_index);
-          t->CopyTriangles(*u_t);
-          t->RotateZ(rotz)->RotateY(roty);
-          templates_[new_index] = t;
-        }
-        // Complement combination
-        new_index = ~new_index;
-        if (templates_[new_index] == NULL) {
-          MCTemplate* t = new MCTemplate(u_t->n_triangles_, new_index);
-          t->CopyTriangles(*u_t);
-          t->RotateZ(rotz)->RotateY(roty);
-          t->set_complement(true);
-          templates_[new_index] = t;
-        }
-      }
-    }
+
   }
 }
 
@@ -214,6 +256,48 @@ uint8_t MarchingCubes::IndexRotateZ(const uint8_t index, const int degrees) {
       Vector3 v = corners_as_vectors_[i];
       v.Translate(-0.5f, -0.5f, 0.5f)->RotateZ(degrees)->Translate(0.5f, 0.5f,
                                                                    -0.5f);
+      new_index = new_index | (1u << ConvertVectorToCorner(v));
+    }
+  }
+
+  return new_index;
+}
+
+uint8_t MarchingCubes::IndexMirrorX(const uint8_t index) {
+  uint8_t new_index = 0;
+  for (int i = 0; i < 8; i++) {
+    const uint8_t single_index = index & (1u << i);
+    if (single_index) {
+      Vector3 v = corners_as_vectors_[i];
+      v.Translate(-0.5f, -0.5f, 0.5f)->MirrorX()->Translate(0.5f, 0.5f, -0.5f);
+      new_index = new_index | (1u << ConvertVectorToCorner(v));
+    }
+  }
+
+  return new_index;
+}
+
+uint8_t MarchingCubes::IndexMirrorY(const uint8_t index) {
+  uint8_t new_index = 0;
+  for (int i = 0; i < 8; i++) {
+    const uint8_t single_index = index & (1u << i);
+    if (single_index) {
+      Vector3 v = corners_as_vectors_[i];
+      v.Translate(-0.5f, -0.5f, 0.5f)->MirrorY()->Translate(0.5f, 0.5f, -0.5f);
+      new_index = new_index | (1u << ConvertVectorToCorner(v));
+    }
+  }
+
+  return new_index;
+}
+
+uint8_t MarchingCubes::IndexMirrorZ(const uint8_t index) {
+  uint8_t new_index = 0;
+  for (int i = 0; i < 8; i++) {
+    const uint8_t single_index = index & (1u << i);
+    if (single_index) {
+      Vector3 v = corners_as_vectors_[i];
+      v.Translate(-0.5f, -0.5f, 0.5f)->MirrorZ()->Translate(0.5f, 0.5f, -0.5f);
       new_index = new_index | (1u << ConvertVectorToCorner(v));
     }
   }

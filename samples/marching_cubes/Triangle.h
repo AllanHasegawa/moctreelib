@@ -43,6 +43,9 @@ class Triangle {
   Triangle* RotateY(const double degrees);
   Triangle* RotateZ(const double degrees);
   Triangle* Translate(const double x, const double y, const double z);
+  Triangle* MirrorX();
+  Triangle* MirrorY();
+  Triangle* MirrorZ();
 };
 
 #endif /* MOCTREE_TRIANGLE_H_ */

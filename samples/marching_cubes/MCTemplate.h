@@ -46,6 +46,9 @@ class MCTemplate {
   MCTemplate* RotateX(const double degrees);
   MCTemplate* RotateY(const double degrees);
   MCTemplate* RotateZ(const double degrees);
+  MCTemplate* MirrorX();
+  MCTemplate* MirrorY();
+  MCTemplate* MirrorZ();
 
   void set_complement(const bool complement);
 };

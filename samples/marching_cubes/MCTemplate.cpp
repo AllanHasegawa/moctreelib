@@ -28,7 +28,8 @@
 
 MCTemplate::MCTemplate(const int n_triangles, const int index)
     : n_triangles_(n_triangles),
-      index_(index), complement_(false) {
+      index_(index),
+      complement_(false) {
   triangles_ = new Triangle[n_triangles];
 }
 
@@ -72,6 +73,32 @@ MCTemplate* MCTemplate::RotateZ(const double degrees) {
   return this;
 }
 
+MCTemplate* MCTemplate::MirrorX() {
+  for (int i = 0; i < n_triangles_; i++) {
+    triangles_[i].MirrorX();
+  }
+  return this;
+}
+
+MCTemplate* MCTemplate::MirrorY() {
+  for (int i = 0; i < n_triangles_; i++) {
+    triangles_[i].MirrorY();
+  }
+  return this;
+}
+
+MCTemplate* MCTemplate::MirrorZ() {
+  for (int i = 0; i < n_triangles_; i++) {
+    triangles_[i].MirrorZ();
+  }
+  return this;
+}
+
 void MCTemplate::set_complement(const bool complement) {
+  if (complement_ != complement) {
+    for (int i = 0; i < n_triangles_; i++) {
+      triangles_[i].normal_.MirrorX()->MirrorY()->MirrorZ();
+    }
+  }
   complement_ = complement;
 }

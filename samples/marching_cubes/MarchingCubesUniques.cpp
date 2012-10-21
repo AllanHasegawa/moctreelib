@@ -490,7 +490,7 @@ void MarchingCubes::GenerateUniqueTemplates() {
    */
   tric = 0;
   tc = 0;
-  index = CornersToIndex(1, 1, 1, 1, 0, 0, 0, 0);
+  index = CornersToIndex(1, 1, 0, 0, 1, 1, 0, 0);
   t = new MCTemplate(2, index);
 
   // s tri1

@@ -117,6 +117,21 @@ class Vector3 {
     return nv;
   }
 
+  Vector3* MirrorX() {
+    x_ = -x_;
+    return this;
+  }
+
+  Vector3* MirrorY() {
+    y_ = -y_;
+    return this;
+  }
+
+  Vector3* MirrorZ() {
+    z_ = -z_;
+    return this;
+  }
+
 };
 
 #endif /* MOCTREE_VECTOR3_H_ */

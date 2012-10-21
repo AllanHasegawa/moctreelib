@@ -51,6 +51,10 @@ class MarchingCubes {
   uint8_t IndexRotateX(const uint8_t index, const int degrees);
   uint8_t IndexRotateY(const uint8_t index, const int degrees);
   uint8_t IndexRotateZ(const uint8_t index, const int degrees);
+  uint8_t IndexMirrorX(const uint8_t index);
+  uint8_t IndexMirrorY(const uint8_t index);
+  uint8_t IndexMirrorZ(const uint8_t index);
+
   int ConvertVectorToCorner(const Vector3& v);
 
  private:

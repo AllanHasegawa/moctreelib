@@ -36,9 +36,9 @@ Camera::Camera()
   angle_sensitivity_.y_ = 0.1;
   angle_sensitivity_.z_ = 0.1;
 
-  movement_speed_.x_ = 0.05;
-  movement_speed_.y_ = 0.05;
-  movement_speed_.z_ = 0.05;
+  movement_speed_.x_ = 10.05;
+  movement_speed_.y_ = 10.05;
+  movement_speed_.z_ = 10.05;
 }
 
 Camera::~Camera() {

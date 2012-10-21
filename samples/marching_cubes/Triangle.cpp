@@ -51,7 +51,7 @@ void Triangle::Render() {
   glNormal3f(normal_.x_, normal_.y_, normal_.z_);
   glVertex3f(vertices_[1].x_, vertices_[1].y_, vertices_[1].z_);
   glColor3f(0, 0, 1);
-  glNormal3f(normal_.x_, normal_.y_, normal_.z_);
+  //glNormal3f(normal_.x_, normal_.y_, normal_.z_);
   glVertex3f(vertices_[2].x_, vertices_[2].y_, vertices_[2].z_);
   glEnd();
 }
@@ -84,5 +84,28 @@ Triangle* Triangle::Translate(const double x, const double y, const double z) {
   for (int i = 0; i < 3; i++) {
     vertices_[i].Translate(x, y, z);
   }
+  return this;
+}
+
+Triangle* Triangle::MirrorX() {
+  for (int i = 0; i < 3; i++) {
+    vertices_[i].MirrorX();
+  }
+  normal_.MirrorX();
+  return this;
+}
+
+Triangle* Triangle::MirrorY() {
+  for (int i = 0; i < 3; i++) {
+    vertices_[i].MirrorY();
+  }
+  normal_.MirrorY();
+  return this;
+}
+Triangle* Triangle::MirrorZ() {
+  for (int i = 0; i < 3; i++) {
+    vertices_[i].MirrorZ();
+  }
+  normal_.MirrorZ();
   return this;
 }

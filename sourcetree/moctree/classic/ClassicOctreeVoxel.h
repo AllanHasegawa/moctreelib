@@ -27,6 +27,7 @@
 #ifndef MOCTREE_CLASSICOCTREEVOXEL_H_
 #define MOCTREE_CLASSICOCTREEVOXEL_H_
 
+#include <stdio.h>
 #include <string>
 #include <sstream>
 #include <stdint.h>
@@ -37,7 +38,8 @@ namespace moctree {
 template<class T>
 class ClassicOctreeVoxel {
  public:
-  ClassicOctreeVoxel(uint32_t x, uint32_t y, uint32_t z, uint32_t size, uint32_t tree_max_size)
+  ClassicOctreeVoxel(uint32_t x, uint32_t y, uint32_t z, uint32_t size,
+                     uint32_t tree_max_size)
       : x_(x),
         y_(y),
         z_(z),
@@ -106,7 +108,7 @@ class ClassicOctreeVoxel {
   }
 
   MOctreeCell<T> GetCell(const uint32_t x, const uint32_t y, const uint32_t z) {
-    if (x > tree_max_size_ || y > tree_max_size_ || z > tree_max_size_) {
+    if (x >= tree_max_size_ || y >= tree_max_size_ || z >= tree_max_size_) {
       throw std::exception();
     }
     // if there is data BEFORE hitting the bottom of the tree
@@ -128,13 +130,22 @@ class ClassicOctreeVoxel {
   MOctreeCell<T> GetNeighbor(const MOctreeCell<T>& source, const int32_t x,
                              const int32_t y, const int32_t z) {
     ClassicOctreeVoxel<T>* c = source.classic_octree_voxel_;
-    // TODO: works always?
-    if (c->father_ == NULL) {
-      //source.classic_octree_voxel_->GetCell(x + x_, y + y_, z + z_);
-      std::exception();
+
+    while (true) {
+      if (c->x_ >= x && c->x_ + c->size_ < x) {
+        if (c->y_ >= y && c->y_ + c->size_ < y) {
+          if (c->z_ >= z && c->z_ + c->size_ < z) {
+            break;
+          }
+        }
+      }
+      if (c->father_ == NULL) {
+        break;
+      }
+      c = c->father_;
     }
 
-    return c->father_->GetCell(x + c->x(), y + c->y(), z + c->z());
+    return c->GetCell(x + source.x_, y + source.y_, z + source.z_);
   }
 
   std::string ToStringRecursive(const int level, const int child_number) {

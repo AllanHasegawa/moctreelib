@@ -10,6 +10,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../../cmake/modu
 find_package(MOctree REQUIRED)
 include_directories(${MOCTREE_INCLUDE_DIRS})
 
+set(CMAKE_CXX_FLAGS_RELEASE "")
+message(STATUS "DEBUG FLAGS: ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS "RELEASE FLAGS: ${CMAKE_CXX_FLAGS_RELEASE}")
+
 
 set(SRCS
 	marching_cubes.cpp
