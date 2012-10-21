@@ -24,53 +24,33 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <iostream>
-#include <moctree/MOctree.h>
-#include <moctree/classic/ClassicOctree.h>
-#include <moctree/classic/ClassicOctreeCell.h>
+#ifndef MOCTREE_MCTEMPLATE_H_
+#define MOCTREE_MCTEMPLATE_H_
 
-int main() {
-  using namespace std;
+#include <Triangle.h>
 
-  int types[2];
-  types[0] = 1;
-  types[1] = 2;
+class MCTemplate {
+ public:
+  MCTemplate(const int n_triangles, const int index);
 
-  moctree::MOctree<int> *t0;
-  t0 = new moctree::ClassicOctree<int>(16);
+  virtual ~MCTemplate();
 
-  // One block of size 2x2x2
-  for (int x = 0; x < 2; x++) {
-    for (int y = 0; y < 2; y++) {
-      for (int z = 0; z < 2; z++) {
-        t0->InsertCell(x, y, z, types + 0);
-      }
-    }
-  }
+  Triangle* triangles_;
+  int n_triangles_;
+  uint8_t index_;  // See (Lorensen, 1987)
+  bool complement_;
 
-  // A Single cell
-  t0->InsertCell(2, 3, 1, types + 1);
+  void Render();
 
-  // Lets insert a cell, then destroy, t0 will get back to
-  // previous state :)
-  t0->InsertCell(2, 3, 2, types + 1);
-  t0->DeleteCell(2, 3, 2);
+  void CopyTriangles(const MCTemplate& source);
+  MCTemplate* RotateX(const double degrees);
+  MCTemplate* RotateY(const double degrees);
+  MCTemplate* RotateZ(const double degrees);
+  MCTemplate* MirrorX();
+  MCTemplate* MirrorY();
+  MCTemplate* MirrorZ();
 
-  cout << t0->ToString() << endl;
+  void set_complement(const bool complement);
+};
 
-  cout << "Hello" << endl;
-
-  cout << "T0: " << types + 0 << endl << "T1: " << types + 1 << endl;
-
-  cout << t0->GetData(0, 0, 0) << endl;
-  cout << t0->GetData(2, 3, 1) << endl;
-
-  cout << t0->GetCell(2, 3, 1).data_ << endl;
-  cout << t0->GetNeighbor(t0->GetCell(2, 3, 0), 0, 0, 1).data_ << endl;
-
-  cout << "World!" << endl;
-
-  delete t0;
-
-  return 0;
-}
+#endif /* MOCTREE_MCTEMPLATE_H_ */

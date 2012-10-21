@@ -25,9 +25,18 @@
  */
 
 #include "CanvasWindow.h"
+
+#include <ctime>
+#include <stdio.h>
+
 #include <wx/wx.h>
 #include <wx/glcanvas.h>
-#include <stdio.h>
+
+#include <moctree/classic/ClassicOctree.h>
+#include <moctree/MOctreeCell.h>
+
+#include <MCTemplate.h>
+#include <MarchingCubes.h>
 
 CanvasWindow::CanvasWindow(wxFrame *parent)
     : pending_setup_(true),
@@ -38,10 +47,10 @@ CanvasWindow::CanvasWindow(wxFrame *parent)
 
   gl_context_ = new wxGLContext(this);
 
-  camera_position_.SetMovementSpeed(0.1, 0.1, 0.1);
-  camera_position_.SetAngleSensitivity(0.1, 0.1, 0.1);
-
   SetBackgroundStyle(wxBG_STYLE_CUSTOM);
+
+  SetupOctree();
+  CreateMesh();
 }
 
 CanvasWindow::~CanvasWindow() {
@@ -52,12 +61,39 @@ void CanvasWindow::OnPaintit(wxPaintEvent& WXUNUSED(event)) {
   wxGLCanvas::SetCurrent(*gl_context_);
   wxPaintDC(this);
   if (pending_setup_) {
-    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+    light_ambient_[0] = 0.2f;
+    light_ambient_[1] = 0.2f;
+    light_ambient_[2] = 0.2f;
+    light_ambient_[3] = 1.f;
+
+    light_diffuse_[0] = 1.f;
+    light_diffuse_[1] = 1.f;
+    light_diffuse_[2] = 1.f;
+    light_diffuse_[3] = 1.f;
+
+    light_diffuse_pos_[0] = 0.f;
+    light_diffuse_pos_[0] = 100.f;
+    light_diffuse_pos_[0] = 0.f;
+    light_diffuse_pos_[0] = 1.f;
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     glClearDepth(1.0);
-    glDepthFunc(GL_LESS);
+    glDepthFunc(GL_LEQUAL);
     glEnable(GL_DEPTH_TEST);
     glShadeModel(GL_SMOOTH);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+    glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient_);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse_);
+    glLightfv(GL_LIGHT1, GL_POSITION, light_diffuse_pos_);
+    //glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT1);
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_NORMALIZE);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
     SetupOpenGLProjection();
 
@@ -70,70 +106,77 @@ void CanvasWindow::OnPaintit(wxPaintEvent& WXUNUSED(event)) {
 }
 
 void CanvasWindow::Update(const double& delta_time) {
-  camera_position_.Update(delta_time);
   Refresh(false);
+
+  camera_.Update(delta_time);
 
   rot_ += 0.1 * delta_time;
 }
 
 void CanvasWindow::Render() {
+  camera_.Render();
 
-
-  const float pi_over_180 = 0.0174532925f;
-
-  GLfloat camera_x_trans = -camera_position_.position().x_;  // Used For Player Translation On The X Axis
-  GLfloat camera_z_trans = -camera_position_.position().z_;  // Used For Player Translation On The Z Axis
-  GLfloat camera_y_trans = -camera_position_.position().y_;    // Used For Bouncing Motion Up And Down
-
-  GLfloat camera_x_rot = 360.0f - camera_position_.angle().x_;
-  GLfloat camera_y_rot = 360.0f - camera_position_.angle().y_;  // 360 Degree Angle For Player Direction
-
-  glLoadIdentity();
-
-  glRotatef(camera_x_rot, 1.0f, 0, 0);  // Rotate Up And Down To Look Up And Down
-  glRotatef(camera_y_rot, 0, 1.0f, 0);  // Rotate Depending On Direction Player Is Facing
-
-  glTranslatef(camera_x_trans, camera_y_trans, camera_z_trans);  // Translate The Scene Based On Player
-
+  //glTranslatef(0, 0, 50);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glTranslatef(1.5f, 0.0f, -10.0f);            // Move Right And Into The Screen
+  //MarchingCubes* mc = MarchingCubes::CreateMarchingCubes();
 
-  glRotatef(rot_, 1.0f, 1.0f, 1.0f);            // Rotate The Cube On X, Y & Z
+  //mc->GetTemplate(0, 0, 33, 0, 0, 0, 0, 0)->Render();
+  /*
+   printf("%d\n", mc->CornersToIndex(0, 0, 1, 1, 0, 0, 1, 1));
+   glTranslatef(1, 0, 0);
+   mc->GetTemplate(0, 0, 1, 1, 0, 0, 1, 1)->Render();
+   glTranslatef(1, 0, 0);
+   mc->GetTemplate(0, 0, 1, 1, 0, 0, 1, 1)->Render();
+   glTranslatef(1, 0, 0);
+   mc->GetTemplate(0, 0, 1, 0, 0, 0, 1, 0)->Render();
+   glTranslatef(0, 1, 0);
+   mc->GetTemplate(1, 0, 1, 0, 1, 0, 0, 0)->Render();
+   glTranslatef(0, 0, -1);
+   mc->GetTemplate(1, 0, 0, 0, 0, 0, 0, 0)->Render();
+   */
+  for (std::vector<Triangle>::iterator i = mesh_.begin(); i != mesh_.end();
+      i++) {
+    i->Render();
+  }
+  /*
 
-  glBegin(GL_QUADS);                  // Start Drawing The Cube
 
-  glColor3f(0.0f, 1.0f, 0.0f);          // Set The Color To Green
-  glVertex3f(1.0f, 1.0f, -1.0f);          // Top Right Of The Quad (Top)
-  glVertex3f(-1.0f, 1.0f, -1.0f);          // Top Left Of The Quad (Top)
-  glVertex3f(-1.0f, 1.0f, 1.0f);          // Bottom Left Of The Quad (Top)
-  glVertex3f(1.0f, 1.0f, 1.0f);          // Bottom Right Of The Quad (Top)
-  glColor3f(1.0f, 0.5f, 0.0f);          // Set The Color To Orange
-  glVertex3f(1.0f, -1.0f, 1.0f);          // Top Right Of The Quad (Bottom)
-  glVertex3f(-1.0f, -1.0f, 1.0f);          // Top Left Of The Quad (Bottom)
-  glVertex3f(-1.0f, -1.0f, -1.0f);          // Bottom Left Of The Quad (Bottom)
-  glVertex3f(1.0f, -1.0f, -1.0f);          // Bottom Right Of The Quad (Bottom)
-  glColor3f(1.0f, 0.0f, 0.0f);          // Set The Color To Red
-  glVertex3f(1.0f, 1.0f, 1.0f);          // Top Right Of The Quad (Front)
-  glVertex3f(-1.0f, 1.0f, 1.0f);          // Top Left Of The Quad (Front)
-  glVertex3f(-1.0f, -1.0f, 1.0f);          // Bottom Left Of The Quad (Front)
-  glVertex3f(1.0f, -1.0f, 1.0f);          // Bottom Right Of The Quad (Front)
-  glColor3f(1.0f, 1.0f, 0.0f);          // Set The Color To Yellow
-  glVertex3f(1.0f, -1.0f, -1.0f);          // Bottom Left Of The Quad (Back)
-  glVertex3f(-1.0f, -1.0f, -1.0f);          // Bottom Right Of The Quad (Back)
-  glVertex3f(-1.0f, 1.0f, -1.0f);          // Top Right Of The Quad (Back)
-  glVertex3f(1.0f, 1.0f, -1.0f);  // Top Left Of The Quad (Back)glColor3f(0.0f,0.0f,1.0f);          // Set The Color To Blue
-  glVertex3f(-1.0f, 1.0f, 1.0f);          // Top Right Of The Quad (Left)
-  glVertex3f(-1.0f, 1.0f, -1.0f);          // Top Left Of The Quad (Left)
-  glVertex3f(-1.0f, -1.0f, -1.0f);          // Bottom Left Of The Quad (Left)
-  glVertex3f(-1.0f, -1.0f, 1.0f);          // Bottom Right Of The Quad (Left)
-  glColor3f(1.0f, 0.0f, 1.0f);          // Set The Color To Violet
-  glVertex3f(1.0f, 1.0f, -1.0f);          // Top Right Of The Quad (Right)
-  glVertex3f(1.0f, 1.0f, 1.0f);          // Top Left Of The Quad (Right)
-  glVertex3f(1.0f, -1.0f, 1.0f);          // Bottom Left Of The Quad (Right)
-  glVertex3f(1.0f, -1.0f, -1.0f);          // Bottom Right Of The Quad (Right)
-  glEnd();                        // Done Drawing The Quad
+   glPushMatrix();
+   mc->GetTemplate(0, 1, 0, 0, 1, 1, 1, 0)->Render();
+   glPopMatrix();
 
+   glPushMatrix();
+   //mc->GetTemplate(1, 1, 1, 1, 0, 0, 1, 1)->Render();
+   glPopMatrix();
+
+   glPushMatrix();
+   //mc->GetTemplate(0, 0, 0, 0, 1, 1, 0, 0)->Render();
+   glPopMatrix();
+
+   glPushMatrix();
+   //mc->GetTemplate(0, 0, 0, 0, 0, 0, 1, 1)->Render();
+   glPopMatrix();
+   /*
+   glPushMatrix();
+   mc->GetTemplate(0, 0, 0, 0, 1, 0, 0, 0)->Render();
+   glPopMatrix();
+
+   glPushMatrix();
+   mc->GetTemplate(0, 0, 0, 0, 0, 1, 0, 0)->Render();
+   glPopMatrix();
+
+   glPushMatrix();
+   mc->GetTemplate(0, 0, 0, 0, 0, 0, 1, 0)->Render();
+   glPopMatrix();
+
+   glPushMatrix();
+   mc->GetTemplate(0, 0, 0, 0, 0, 0, 0, 1)->Render();
+   glPopMatrix();
+
+   /*
+   *
+   */
   glFlush();
 }
 
@@ -145,7 +188,7 @@ void CanvasWindow::SetupOpenGLProjection() {
   glViewport(0, 0, (GLint) GetSize().x, (GLint) GetSize().y);
 
   gluPerspective(45.0f, (GLfloat) GetSize().x / (GLfloat) GetSize().y, 0.1f,
-                 100.0f);
+                 10000.0f);
 
   glMatrixMode(GL_MODELVIEW);
 }
@@ -171,7 +214,7 @@ void CanvasWindow::OnMouseMoved(wxMouseEvent& event) {
     const int lpx = mouse_last_posistion_.x_;
     const int lpy = mouse_last_posistion_.y_;
 
-    camera_position_.SetAngleDisplacement(-(py - lpy), px - lpx, 0);
+    camera_.SetAngleDisplacement(-(py - lpy), px - lpx, 0);
   }
 
   mouse_last_posistion_.x_ = px;
@@ -205,37 +248,34 @@ void CanvasWindow::OnKeyPressed(wxKeyEvent& event) {
 
   switch (kc) {
     case WXK_PAGEUP: {
-      camera_position_.SetYMovement(FORWARD);
+      camera_.SetYMovement(FORWARD);
       break;
     }
     case WXK_PAGEDOWN: {
-      camera_position_.SetYMovement(BACKWARD);
+      camera_.SetYMovement(BACKWARD);
       break;
     }
     case WXK_LEFT: {
-      //camera_position_.SetXMovement(BACKWARD);
+      camera_.SetXMovement(BACKWARD);
       break;
     }
     case WXK_RIGHT: {
-      //camera_position_.SetXMovement(FORWARD);
+      camera_.SetXMovement(FORWARD);
       break;
     }
     case WXK_UP: {
-      camera_position_.SetZMovement(BACKWARD);
-      camera_position_.SetXMovement(BACKWARD);
+      camera_.SetZMovement(BACKWARD);
       break;
     }
     case WXK_DOWN: {
-      camera_position_.SetZMovement(FORWARD);
-      camera_position_.SetXMovement(FORWARD);
+      camera_.SetZMovement(FORWARD);
       break;
     }
     case WXK_BACK: {
-      camera_position_.Reset();
+      camera_.Reset();
       break;
     }
   }
-  printf("KD: %d\n", event.GetKeyCode());
 }
 
 void CanvasWindow::OnKeyReleased(wxKeyEvent& event) {
@@ -244,25 +284,203 @@ void CanvasWindow::OnKeyReleased(wxKeyEvent& event) {
   switch (kc) {
     case WXK_LEFT:
     case WXK_RIGHT: {
-      camera_position_.SetXMovement(NONE);
-      camera_position_.SetZMovement(NONE);
+      camera_.SetXMovement(NONE);
+      camera_.SetZMovement(NONE);
       break;
     }
     case WXK_UP:
     case WXK_DOWN: {
-      camera_position_.SetXMovement(NONE);
-      camera_position_.SetZMovement(NONE);
+      camera_.SetXMovement(NONE);
+      camera_.SetZMovement(NONE);
       break;
     }
   }
-  camera_position_.SetYMovement(NONE);
-  printf("KU: %d\n", event.GetKeyCode());
+  camera_.SetYMovement(NONE);
+}
+
+void CanvasWindow::SetupOctree() {
+  clock_t begin = std::clock();
+  int t_size = 64;
+
+  moctree_ = new moctree::ClassicOctree<int>(t_size);
+  moctree_data_ = 1;
+
+  Vector3 p0, p1, p2, bc, sphere;
+  p0.x_ = 0;
+  p0.y_ = 0;
+  p0.z_ = 0;
+  p1.x_ = t_size / 4;
+  p1.y_ = t_size - 1;
+  p1.z_ = t_size - 1;
+  p2.x_ = t_size - 1;
+  p2.y_ = 0;
+  p2.z_ = 0;
+
+  int n_cells = 0;
+
+  for (double t = 0; t <= 1; t += 0.001) {
+    bc.x_ = (1 - t) * ((1 - t) * p0.x_ + t * p1.x_)
+        + t * ((1 - t) * p1.x_ + t * p2.x_);
+    bc.y_ = (1 - t) * ((1 - t) * p0.y_ + t * p1.y_)
+        + t * ((1 - t) * p1.y_ + t * p2.y_);
+    bc.z_ = (1 - t) * ((1 - t) * p0.z_ + t * p1.z_)
+        + t * ((1 - t) * p1.z_ + t * p2.z_);
+
+    int radius_size = 3;
+    //for (double r = 0; r < radius_size; r += 1) {
+    for (double alpha = 0; alpha < 2 * M_PI; alpha += 0.3) {
+      for (double beta = 0; beta < M_PI; beta += 0.3) {
+        sphere.x_ = radius_size * cos(alpha) * sin(beta);
+        sphere.y_ = radius_size * sin(alpha) * sin(beta);
+        sphere.z_ = radius_size * cos(beta);
+        moctree_->InsertCell(sphere.x_ + bc.x_, sphere.y_ + bc.y_,
+                             sphere.z_ + bc.z_, &moctree_data_);
+        n_cells++;
+      }
+    }
+  }
+
+  clock_t end = std::clock();
+  printf("Octree created in %f seconds...\n",
+         double(end - begin) / CLOCKS_PER_SEC);
+
+}
+
+void CanvasWindow::CreateMesh() {
+  clock_t begin = std::clock();
+  MarchingCubes* mc = MarchingCubes::CreateMarchingCubes();
+
+  int size = moctree_->size();
+
+  printf("Creating Corners Matrix...\n");
+  // +2 == Border
+  // Each cell is displaced +1 in each axis
+  //bool corners[size + 2][size + 2][size + 2];
+  bool ***corners;
+  corners = new bool**[size + 2];
+  for (int i = 0; i < size + 2; i++) {
+    corners[i] = new bool*[size + 2];
+    for (int j = 0; j < size + 2; j++) {
+      corners[i][j] = new bool[size + 2];
+    }
+  }
+  for (int x = 0; x < size + 2; x++) {
+    for (int y = 0; y < size + 2; y++) {
+      for (int z = 0; z < size + 2; z++) {
+        corners[x][y][z] = false;
+      }
+    }
+  }
+
+  // EACH OCTREE CELL == 1 CORNER!
+  moctree::MOctreeCell<int> o_cell = moctree_->GetCell(0, 0, 0);
+
+  int x = 0;
+  int y = 0;
+  int z = 0;
+  int d_x = 1;
+  int d_y = 1;
+
+  for (int z = 0; z < size - 1; z++) {
+    // if o_cell.z_ is power of two
+    /*if (!(((int) (o_cell.z_ - 1)) & (int) (o_cell.z_))) {
+      printf("Meshing: (%d/%d)\n", o_cell.z_, size);
+    }*/
+    while (true) {
+      while (true) {
+        corners[x + 1][y + 1][z + 1] = o_cell.data_ != NULL;
+        x += d_x;
+        if (x >= 0 && x < size) {
+          o_cell = moctree_->GetNeighbor(o_cell, d_x, 0, 0);
+        } else {
+          d_x *= -1;
+          x += d_x;
+          break;
+        }
+      }
+      y += d_y;
+      if (y >= 0 && y < size) {
+        o_cell = moctree_->GetNeighbor(o_cell, 0, d_y, 0);
+      } else {
+        d_y *= -1;
+        y += d_y;
+        break;
+      }
+    }
+    o_cell = moctree_->GetNeighbor(o_cell, 0, 0, 1);
+  }
+
+  clock_t end = std::clock();
+  printf("Corners Matrix created in %f seconds...\n",
+         double(end - begin) / CLOCKS_PER_SEC);
+
+  begin = std::clock();
+
+  // Corners Matrix To Mesh
+  for (int z = 0; z < size + 1; z += 1) {
+    for (int y = 0; y < size + 1; y += 1) {
+      for (int x = 0; x < size + 1; x += 1) {
+        MCTemplate *cube = mc->GetTemplate(corners[x][y][z],
+                                           corners[x + 1][y][z],
+                                           corners[x][y + 1][z],
+                                           corners[x + 1][y + 1][z],
+                                           corners[x][y][z + 1],
+                                           corners[x + 1][y][z + 1],
+                                           corners[x][y + 1][z + 1],
+                                           corners[x + 1][y + 1][z + 1]);
+        if (cube == NULL) {
+          /*printf("FUUUUUUUUU %d %d %d %d %d %d %d %d\n", corners[x][y][z],
+                 corners[x + 1][y][z], corners[x][y + 1][z],
+                 corners[x + 1][y + 1][z], corners[x][y][z + 1],
+                 corners[x + 1][y][z + 1], corners[x][y + 1][z + 1],
+                 corners[x + 1][y + 1][z + 1]);*/
+          continue;
+        }
+        for (int t_n = 0; t_n < cube->n_triangles_; t_n++) {
+          Triangle t = cube->triangles_[t_n];
+          t.Translate(x * 1.0, y * 1.0, z * (-1.0));
+          mesh_.push_back(t);
+        }
+      }
+    }
+  }
+  end = std::clock();
+  printf("Mesh completed in %f seconds with %d triangles...\n",
+         double(end - begin) / CLOCKS_PER_SEC, mesh_.size());
 }
 /*
+ *
+ * int c_i = 0;
+ for (int c_z = 0; c_z < 2; c_z++) {
+ for (int c_y = 0; c_y < 2; c_y++) {
+ for (int c_x = 0; c_x < 2; c_x++) {
+ int ti = 0;
+ MCTemplate *cube = mc->GetTemplate(corners[c_i][ti++],
+ corners[c_i][ti++],
+ corners[c_i][ti++],
+ corners[c_i][ti++],
+ corners[c_i][ti++],
+ corners[c_i][ti++],
+ corners[c_i][ti++],
+ corners[c_i][ti++]);
+ c_i++;
+ for (int t_n = 0; t_n < cube->n_triangles_; t_n++) {
+ Triangle t = cube->triangles_[t_n];
+ printf("%d %d %d\n", x, y, z);
+ t.Translate(-c_x + 0.5, -c_y + 0.5, c_z - 0.5);
+ //t.Translate(x * 4, y * 4, z * 4);
+ mesh_.push_back(t);
+ }
+ }
+ }
+ }
+ */
+/*
  * wxWidget events link =X
- */                        //
-BEGIN_EVENT_TABLE(CanvasWindow, wxGLCanvas)   //
-EVT_MOUSEWHEEL(CanvasWindow::OnMouseWheelMoved)  //
+ */  //
+BEGIN_EVENT_TABLE(CanvasWindow, wxGLCanvas)
+//
+EVT_MOUSEWHEEL (CanvasWindow::OnMouseWheelMoved)  //
 EVT_MOTION(CanvasWindow::OnMouseMoved)//
 EVT_LEFT_DOWN(CanvasWindow::OnMouseLeftDown)//
 EVT_LEFT_UP(CanvasWindow::OnMouseLeftUp)//
@@ -274,4 +492,5 @@ EVT_KEY_UP(CanvasWindow::OnKeyReleased)//
 EVT_PAINT (CanvasWindow::OnPaintit)//
 EVT_SIZE(CanvasWindow::OnResized)//
 EVT_IDLE(CanvasWindow::OnIdle)//
-END_EVENT_TABLE()//
+END_EVENT_TABLE()
+//

@@ -24,49 +24,52 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MOCTREE_CLASSICOCTREECELL_H_
-#define MOCTREE_CLASSICOCTREECELL_H_
+#ifndef MOCTREE_CLASSICOCTREEVOXEL_H_
+#define MOCTREE_CLASSICOCTREEVOXEL_H_
 
-#include <stdint.h>
-#include <iostream>
+#include <stdio.h>
 #include <string>
 #include <sstream>
+#include <stdint.h>
+#include <moctree/MOctreeCell.h>
 
 namespace moctree {
 
 template<class T>
-class ClassicOctreeCell {
+class ClassicOctreeVoxel {
  public:
-  ClassicOctreeCell(uint32_t x, uint32_t y, uint32_t z, uint32_t size)
+  ClassicOctreeVoxel(uint32_t x, uint32_t y, uint32_t z, uint32_t size,
+                     uint32_t tree_max_size)
       : x_(x),
         y_(y),
         z_(z),
-        size_(size),
         data_(NULL),
+        size_(size),
+        tree_max_size_(tree_max_size),
         children_(NULL),
         father_(NULL) {
   }
-  virtual ~ClassicOctreeCell() {
+  virtual ~ClassicOctreeVoxel() {
     KillChildren();
   }
 
-  ClassicOctreeCell<T> GetChild(const int N) {
+  ClassicOctreeVoxel<T> GetChild(const int N) {
     return children_[N];
   }
 
   void InsertCell(const uint32_t x, const uint32_t y, const uint32_t z,
                   T* data) {
     if (size_ == 1) {
-      data_ = data;
+      this->data_ = data;
 
       this->PopulateFatherCells(this);
 
     } else {
-      if (data_ == data) {
+      if (this->data_ == data) {
         return;
       }
       // Make sure it represents an mixed cell;
-      data_ = NULL;
+      this->data_ = NULL;
       this->CreateChildren();
       this->children_[ConvertXYZToChildNumber(x, y, z)]->InsertCell(x, y, z,
                                                                     data);
@@ -75,22 +78,21 @@ class ClassicOctreeCell {
 
   void DeleteCell(const uint32_t x, const uint32_t y, const uint32_t z) {
     if (size_ == 1) {
-      data_ = NULL;
+      this->data_ = NULL;
       this->PopulateFatherCells(this);
     } else {
-      data_ = NULL;
+      this->data_ = NULL;
       if (children_ != NULL) {
         this->children_[ConvertXYZToChildNumber(x, y, z)]->DeleteCell(x, y, z);
       }
-      this->PopulateFatherCells(this);
     }
   }
 
   T* GetData(const uint32_t x, const uint32_t y, const uint32_t z) {
 
     // if there is data BEFORE hitting the bottom of the tree
-    if (data_ != NULL) {
-      return data_;
+    if (this->data_ != NULL) {
+      return this->data_;
     }
 
     // if is in the actual cell, but no data
@@ -105,6 +107,47 @@ class ClassicOctreeCell {
     return this->children_[ConvertXYZToChildNumber(x, y, z)]->GetData(x, y, z);
   }
 
+  MOctreeCell<T> GetCell(const uint32_t x, const uint32_t y, const uint32_t z) {
+    if (x >= tree_max_size_ || y >= tree_max_size_ || z >= tree_max_size_) {
+      throw std::exception();
+    }
+    // if there is data BEFORE hitting the bottom of the tree
+    // or if is the actual cell
+    // or has no where to go
+    if (size_ == 1 || children_ == NULL) {
+      MOctreeCell<T> c;
+      c.x_ = x;
+      c.y_ = y;
+      c.z_ = z;
+      c.data_ = data_;
+      c.classic_octree_voxel_ = this;
+      return c;
+    }
+
+    return this->children_[ConvertXYZToChildNumber(x, y, z)]->GetCell(x, y, z);
+  }
+
+  MOctreeCell<T> GetNeighbor(const MOctreeCell<T>& source, const int32_t x,
+                             const int32_t y, const int32_t z) {
+    ClassicOctreeVoxel<T>* c = source.classic_octree_voxel_;
+
+    while (true) {
+      if (c->x_ >= x && c->x_ + c->size_ < x) {
+        if (c->y_ >= y && c->y_ + c->size_ < y) {
+          if (c->z_ >= z && c->z_ + c->size_ < z) {
+            break;
+          }
+        }
+      }
+      if (c->father_ == NULL) {
+        break;
+      }
+      c = c->father_;
+    }
+
+    return c->GetCell(x + source.x_, y + source.y_, z + source.z_);
+  }
+
   std::string ToStringRecursive(const int level, const int child_number) {
     std::stringstream child_number_str;
     child_number_str << child_number;
@@ -115,12 +158,15 @@ class ClassicOctreeCell {
     }
     t += "+- ";
 
-    if (data_ == NULL) {
-      t += "<empty> (" + child_number_str.str() + ")\n";
+    std::stringstream sspos;
+    sspos << "(" << x_ << ", " << y_ << ", " << z_ << ")";
+
+    if (this->data_ == NULL) {
+      t += "<empty> (" + child_number_str.str() + ") " + sspos.str() + "\n";
     } else {
       std::stringstream ss;
-      ss << data_;
-      t += ss.str() + " (" + child_number_str.str() + ")\n";
+      ss << this->data_;
+      t += ss.str() + " (" + child_number_str.str() + ") " + sspos.str() + "\n";
     }
 
     if (size_ == 1 || children_ == NULL) {
@@ -141,23 +187,23 @@ class ClassicOctreeCell {
   }
 
   void set_data(T* data) {
-    data_ = data;
+    this->data_ = data;
   }
 
-  void set_father(ClassicOctreeCell<T>* father) {
+  void set_father(ClassicOctreeVoxel<T>* father) {
     father_ = father;
   }
 
   uint32_t x() {
-    return x_;
+    return this->x_;
   }
 
   uint32_t y() {
-    return y_;
+    return this->y_;
   }
 
   uint32_t z() {
-    return z_;
+    return this->z_;
   }
 
   uint32_t size() {
@@ -165,38 +211,39 @@ class ClassicOctreeCell {
   }
 
   T* data() {
-    return data_;
+    return this->data_;
   }
 
  private:
   uint32_t x_;
   uint32_t y_;
   uint32_t z_;
-  uint32_t size_;
   T* data_;
-  ClassicOctreeCell<T>** children_;
-  ClassicOctreeCell<T>* father_;
+  uint32_t size_;
+  uint32_t tree_max_size_;
+  ClassicOctreeVoxel<T>** children_;
+  ClassicOctreeVoxel<T>* father_;
 
   void CreateChildren() {
     if (children_ == NULL && size_ != 1) {
       const uint32_t size_father = size_;
-      const uint32_t x_father = x_;
-      const uint32_t y_father = y_;
-      const uint32_t z_father = z_;
+      const uint32_t x_father = this->x_;
+      const uint32_t y_father = this->y_;
+      const uint32_t z_father = this->z_;
 
       const uint32_t size_children = size_father / 2;
 
       // Lets create the children array
-      children_ = new ClassicOctreeCell<T>*[8];
+      children_ = new ClassicOctreeVoxel<T>*[8];
 
       // then insert it :3
       int counter = 0;
       for (int z = 0; z < 2; z++) {
         for (int y = 0; y < 2; y++) {
           for (int x = 0; x < 2; x++) {
-            children_[counter] = new ClassicOctreeCell<T>(
+            children_[counter] = new ClassicOctreeVoxel<T>(
                 x_father + (x * size_children), y_father + (y * size_children),
-                z_father + (z * size_children), size_children);
+                z_father + (z * size_children), size_children, tree_max_size_);
             children_[counter]->set_father(this);
             counter++;
           }
@@ -217,7 +264,7 @@ class ClassicOctreeCell {
     }
   }
 
-  void PopulateFatherCells(ClassicOctreeCell<T>* cell) {
+  void PopulateFatherCells(ClassicOctreeVoxel<T>* cell) {
     if (cell->father_ != NULL) {
       for (int i = 0; i < 8; i++) {
         if (cell->father_->children_[i]->data_ != cell->data_) {
@@ -237,9 +284,9 @@ class ClassicOctreeCell {
     const uint32_t size = size_;
     const uint32_t mid_size = size_ / 2;
 
-    const int bx = x >= (mid_size + x_);
-    const int by = y >= (mid_size + y_);
-    const int bz = z >= (mid_size + z_);
+    const int bx = x >= (mid_size + this->x_);
+    const int by = y >= (mid_size + this->y_);
+    const int bz = z >= (mid_size + this->z_);
 
     int child = 0;
     child += bx;
@@ -253,4 +300,4 @@ class ClassicOctreeCell {
 
 }  // namespace moctree
 
-#endif /* MOCTREE_CLASSICOCTREECELL_H_ */
+#endif /* MOCTREE_CLASSICOCTREEVOXEL_H_ */

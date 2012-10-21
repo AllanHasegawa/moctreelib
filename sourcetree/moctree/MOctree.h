@@ -28,6 +28,8 @@
 #define MOCTREE_MOCTREE_H_
 
 #include <stdint.h>
+#include <string>
+#include <moctree/MOctreeCell.h>
 
 namespace moctree {
 
@@ -42,6 +44,12 @@ class MOctree {
   virtual void DeleteCell(const uint32_t x, const uint32_t y,
                           const uint32_t z) = 0;
   virtual T* GetData(const uint32_t x, const uint32_t y, const uint32_t z) = 0;
+
+  virtual MOctreeCell<T> GetCell(const uint32_t x, const uint32_t y,
+                              const uint32_t z) = 0;
+  virtual MOctreeCell<T> GetNeighbor(const MOctreeCell<T>& source, const int32_t x,
+                                  const int32_t y, const int32_t z) = 0;
+  virtual int size() = 0;
   virtual std::string ToString() = 0;
 };
 

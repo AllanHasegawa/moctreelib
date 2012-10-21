@@ -24,53 +24,46 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <iostream>
-#include <moctree/MOctree.h>
-#include <moctree/classic/ClassicOctree.h>
-#include <moctree/classic/ClassicOctreeCell.h>
+#ifndef MOCTREE_CAMERA_H_
+#define MOCTREE_CAMERA_H_
 
-int main() {
-  using namespace std;
+#include <Vector3.h>
 
-  int types[2];
-  types[0] = 1;
-  types[1] = 2;
+enum Movement {
+  FORWARD = 1,
+  NONE = 0,
+  BACKWARD = -1
+};
 
-  moctree::MOctree<int> *t0;
-  t0 = new moctree::ClassicOctree<int>(16);
+class Camera {
+ public:
+  Camera();
+  virtual ~Camera();
 
-  // One block of size 2x2x2
-  for (int x = 0; x < 2; x++) {
-    for (int y = 0; y < 2; y++) {
-      for (int z = 0; z < 2; z++) {
-        t0->InsertCell(x, y, z, types + 0);
-      }
-    }
-  }
+  void Update(const double& delta_time);
+  void Render();
+  void Reset();
 
-  // A Single cell
-  t0->InsertCell(2, 3, 1, types + 1);
+  const Vector3 angle();
+  const Vector3 position();
 
-  // Lets insert a cell, then destroy, t0 will get back to
-  // previous state :)
-  t0->InsertCell(2, 3, 2, types + 1);
-  t0->DeleteCell(2, 3, 2);
+  void SetXMovement(Movement movement);
+  void SetYMovement(Movement movement);
+  void SetZMovement(Movement movement);
+  void SetMovementSpeed(const double x, const double y, const double z);
 
-  cout << t0->ToString() << endl;
+  void SetAngleDisplacement(const double x, const double y, const double z);
+  void SetAngleSensitivity(const double x, const double y, const double z);
 
-  cout << "Hello" << endl;
+ private:
+  Vector3 angle_;
+  Vector3 position_;
+  Vector3 moving_;
+  Vector3 movement_speed_;
+  Vector3 angle_sensitivity_;
+  Vector3 heading_;
 
-  cout << "T0: " << types + 0 << endl << "T1: " << types + 1 << endl;
+  const double kDegreeToRadians_;
+};
 
-  cout << t0->GetData(0, 0, 0) << endl;
-  cout << t0->GetData(2, 3, 1) << endl;
-
-  cout << t0->GetCell(2, 3, 1).data_ << endl;
-  cout << t0->GetNeighbor(t0->GetCell(2, 3, 0), 0, 0, 1).data_ << endl;
-
-  cout << "World!" << endl;
-
-  delete t0;
-
-  return 0;
-}
+#endif /* MOCTREE_CAMERA_H_ */

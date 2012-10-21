@@ -24,53 +24,28 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <iostream>
-#include <moctree/MOctree.h>
-#include <moctree/classic/ClassicOctree.h>
-#include <moctree/classic/ClassicOctreeCell.h>
+#ifndef MOCTREE_TRIANGLE_H_
+#define MOCTREE_TRIANGLE_H_
 
-int main() {
-  using namespace std;
+#include <wx/glcanvas.h>
 
-  int types[2];
-  types[0] = 1;
-  types[1] = 2;
+#include <Vector3.h>
 
-  moctree::MOctree<int> *t0;
-  t0 = new moctree::ClassicOctree<int>(16);
+class Triangle {
+ public:
+  Vector3 vertices_[3];
+  Vector3 normal_;
 
-  // One block of size 2x2x2
-  for (int x = 0; x < 2; x++) {
-    for (int y = 0; y < 2; y++) {
-      for (int z = 0; z < 2; z++) {
-        t0->InsertCell(x, y, z, types + 0);
-      }
-    }
-  }
+  void CalculateNormal();
 
-  // A Single cell
-  t0->InsertCell(2, 3, 1, types + 1);
+  void Render();
+  Triangle* RotateX(const double degrees);
+  Triangle* RotateY(const double degrees);
+  Triangle* RotateZ(const double degrees);
+  Triangle* Translate(const double x, const double y, const double z);
+  Triangle* MirrorX();
+  Triangle* MirrorY();
+  Triangle* MirrorZ();
+};
 
-  // Lets insert a cell, then destroy, t0 will get back to
-  // previous state :)
-  t0->InsertCell(2, 3, 2, types + 1);
-  t0->DeleteCell(2, 3, 2);
-
-  cout << t0->ToString() << endl;
-
-  cout << "Hello" << endl;
-
-  cout << "T0: " << types + 0 << endl << "T1: " << types + 1 << endl;
-
-  cout << t0->GetData(0, 0, 0) << endl;
-  cout << t0->GetData(2, 3, 1) << endl;
-
-  cout << t0->GetCell(2, 3, 1).data_ << endl;
-  cout << t0->GetNeighbor(t0->GetCell(2, 3, 0), 0, 0, 1).data_ << endl;
-
-  cout << "World!" << endl;
-
-  delete t0;
-
-  return 0;
-}
+#endif /* MOCTREE_TRIANGLE_H_ */

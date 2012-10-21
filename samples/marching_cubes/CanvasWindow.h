@@ -27,11 +27,15 @@
 #ifndef MOCTREE_CANVASWINDOW_H_
 #define MOCTREE_CANVASWINDOW_H_
 
+#include <vector>
+
 #include <wx/wx.h>
 #include <wx/glcanvas.h>
 
-#include <CameraPosition.h>
+#include <Triangle.h>
+#include <Camera.h>
 #include <Vector3.h>
+#include <moctree/MOctree.h>
 
 class CanvasWindow : public wxGLCanvas {
  public:
@@ -55,13 +59,24 @@ class CanvasWindow : public wxGLCanvas {
   bool pending_setup_;
   float rot_;
   wxGLContext* gl_context_;
-  CameraPosition camera_position_;
+  Camera camera_;
   Vector3 mouse_last_posistion_;
   bool mouse_right_down_;
+
+  GLfloat light_ambient_[4];
+  GLfloat light_diffuse_[4];
+  GLfloat light_diffuse_pos_[4];
+
+  moctree::MOctree<int>* moctree_;
+  int moctree_data_;
+
+  std::vector<Triangle> mesh_;
 
   void Update(const double& delta_time);
   void Render();
   void SetupOpenGLProjection();
+  void SetupOctree();
+  void CreateMesh();
 
  protected:
 DECLARE_EVENT_TABLE()

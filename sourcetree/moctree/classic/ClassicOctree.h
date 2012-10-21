@@ -29,7 +29,7 @@
 
 #include <iostream>
 #include <moctree/MOctree.h>
-#include <moctree/classic/ClassicOctreeCell.h>
+#include <moctree/classic/ClassicOctreeVoxel.h>
 
 namespace moctree {
 
@@ -38,7 +38,7 @@ class ClassicOctree : public MOctree<T> {
  public:
   ClassicOctree(const uint32_t size)
       : size_(size) {
-    root_ = new ClassicOctreeCell<T>(0, 0, 0, size);
+    root_ = new ClassicOctreeVoxel<T>(0, 0, 0, size, size);
   }
   ~ClassicOctree() {
 
@@ -67,12 +67,25 @@ class ClassicOctree : public MOctree<T> {
     return root_->GetData(x, y, z);
   }
 
+  MOctreeCell<T> GetCell(const uint32_t x, const uint32_t y, const uint32_t z) {
+    return static_cast<MOctreeCell<T> >(root_->GetCell(x, y, z));
+  }
+
+  MOctreeCell<T> GetNeighbor(const MOctreeCell<T>& source, const int32_t x,
+                             const int32_t y, const int32_t z) {
+    return root_->GetNeighbor(source, x, y, z);
+  }
+
   std::string ToString() {
     return root_->ToStringRecursive(0, 0);
   }
 
+  int size() {
+    return size_;
+  }
+
  private:
-  ClassicOctreeCell<T>* root_;
+  ClassicOctreeVoxel<T>* root_;
   const uint32_t size_;
 };
 

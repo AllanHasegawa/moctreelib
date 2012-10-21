@@ -24,43 +24,41 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef MOCTREE_CAMERAPOSITION_H_
-#define MOCTREE_CAMERAPOSITION_H_
+#ifndef MOCTREE_MOCTREECELL_H_
+#define MOCTREE_MOCTREECELL_H_
 
-#include <Vector3.h>
+#include <stdint.h>
 
-enum Movement {
-  FORWARD = 1,
-  NONE = 0,
-  BACKWARD = -1
-};
+namespace moctree {
 
-class CameraPosition {
+template<class T>
+class ClassicOctreeVoxel;
+
+template<class T>
+class MOctreeCell {
+  friend class ClassicOctreeVoxel<T>;
  public:
-  CameraPosition();
-  virtual ~CameraPosition();
+  MOctreeCell()
+      : x_(0),
+        y_(0),
+        z_(0),
+        data_(NULL) {
 
-  void Update(const double& delta_time);
-  void Reset();
+  }
 
-  const Vector3 angle();
-  const Vector3 position();
+  virtual ~MOctreeCell() {
 
-  void SetXMovement(Movement movement);
-  void SetYMovement(Movement movement);
-  void SetZMovement(Movement movement);
-  void SetMovementSpeed(const double x, const double y, const double z);
+  }
 
-  void SetAngleDisplacement(const double x, const double y, const double z);
-  void SetAngleSensitivity(const double x, const double y, const double z);
+  uint32_t x_;
+  uint32_t y_;
+  uint32_t z_;
+  T* data_;
 
  private:
-  Vector3 angle_;
-  Vector3 position_;
-  Vector3 moving_;
-  Vector3 movement_speed_;
-  Vector3 angle_sensitivity_;
-  Vector3 heading_;
+  ClassicOctreeVoxel<T>* classic_octree_voxel_;
 };
 
-#endif /* MOCTREE_CAMERAPOSITION_H_ */
+}  // namespace moctree
+
+#endif /* MOCTREE_MOCTREECELL_H_ */
